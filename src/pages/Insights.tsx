@@ -1,0 +1,174 @@
+import { useEffect, useMemo, useState } from "react";
+import { AppShell } from "@/components/AppShell";
+import { supabase } from "@/integrations/supabase/client";
+import { useAnonAuth } from "@/hooks/useAnonAuth";
+import { Meal } from "@/lib/meal";
+import { TrendingUp, AlertTriangle, Heart, Sparkles } from "lucide-react";
+
+const Insights = () => {
+  const { user } = useAnonAuth();
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("meals").select("*").order("meal_at", { ascending: false });
+      setMeals((data ?? []) as unknown as Meal[]);
+      setLoading(false);
+    })();
+  }, [user]);
+
+  const stats = useMemo(() => {
+    const total = meals.length;
+    const symptomFree = meals.filter((m) => m.symptom_severity === "none").length;
+    const triggered = meals.filter((m) => m.symptom_severity !== "none").length;
+    const highFodmap = meals.filter((m) => m.fodmap_level === "high").length;
+
+    // Top trigger ingredients
+    const triggerCounts: Record<string, number> = {};
+    for (const m of meals) {
+      if (m.symptom_severity === "none") continue;
+      for (const t of m.possible_triggers) {
+        const k = t.toLowerCase();
+        triggerCounts[k] = (triggerCounts[k] || 0) + 1;
+      }
+    }
+    const topTriggers = Object.entries(triggerCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // Tolerated foods (symptom-free meals' ingredients)
+    const toleratedCounts: Record<string, number> = {};
+    for (const m of meals) {
+      if (m.symptom_severity !== "none") continue;
+      for (const ing of m.ingredients) {
+        const k = ing.toLowerCase();
+        toleratedCounts[k] = (toleratedCounts[k] || 0) + 1;
+      }
+    }
+    const topTolerated = Object.entries(toleratedCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // Symptom frequency
+    const symptomCounts: Record<string, number> = {};
+    for (const m of meals) {
+      for (const s of m.symptom_types) {
+        const k = s.toLowerCase();
+        symptomCounts[k] = (symptomCounts[k] || 0) + 1;
+      }
+    }
+    const topSymptoms = Object.entries(symptomCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    return { total, symptomFree, triggered, highFodmap, topTriggers, topTolerated, topSymptoms };
+  }, [meals]);
+
+  return (
+    <AppShell>
+      <header className="mb-5 animate-fade-in">
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Patterns</p>
+        <h1 className="mt-1 font-display text-2xl font-semibold">Insights</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Trends across your tracked meals.</p>
+      </header>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted/60 animate-pulse-soft" />)}
+        </div>
+      ) : meals.length === 0 ? (
+        <div className="mt-12 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
+          <Sparkles className="mx-auto h-6 w-6 text-muted-foreground" />
+          <p className="mt-3 text-sm font-medium">No data yet</p>
+          <p className="mt-1 text-xs text-muted-foreground">Track a few meals to start seeing patterns.</p>
+        </div>
+      ) : (
+        <>
+          <section className="grid grid-cols-2 gap-3 animate-fade-in-up">
+            <Stat label="Meals tracked" value={stats.total} />
+            <Stat label="Symptom-free" value={stats.symptomFree} accent="success" />
+            <Stat label="With symptoms" value={stats.triggered} accent="warning" />
+            <Stat label="High FODMAP" value={stats.highFodmap} accent="destructive" />
+          </section>
+
+          <Card icon={<AlertTriangle className="h-4 w-4 text-warning" />} title="Most common trigger ingredients">
+            {stats.topTriggers.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No symptom-causing meals logged yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {stats.topTriggers.map(([name, count]) => (
+                  <Row key={name} name={name} count={count} max={stats.topTriggers[0][1]} tone="warning" />
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card icon={<Heart className="h-4 w-4 text-success" />} title="Foods you tolerate well">
+            {stats.topTolerated.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Log symptom-free meals to discover safe foods.</p>
+            ) : (
+              <ul className="space-y-2">
+                {stats.topTolerated.map(([name, count]) => (
+                  <Row key={name} name={name} count={count} max={stats.topTolerated[0][1]} tone="success" />
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card icon={<TrendingUp className="h-4 w-4 text-primary" />} title="Symptom frequency">
+            {stats.topSymptoms.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No symptoms logged yet — that&apos;s great!</p>
+            ) : (
+              <ul className="space-y-2">
+                {stats.topSymptoms.map(([name, count]) => (
+                  <Row key={name} name={name} count={count} max={stats.topSymptoms[0][1]} tone="primary" />
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <p className="mt-6 text-center text-[11px] text-muted-foreground">
+            Insights are observational and not a clinical diagnosis.
+          </p>
+        </>
+      )}
+    </AppShell>
+  );
+};
+
+const Stat = ({ label, value, accent }: { label: string; value: number; accent?: "success" | "warning" | "destructive" }) => {
+  const color =
+    accent === "success" ? "text-success" :
+    accent === "warning" ? "text-warning" :
+    accent === "destructive" ? "text-destructive" : "text-foreground";
+  return (
+    <div className="rounded-2xl bg-card p-4 shadow-soft">
+      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-2xl font-semibold ${color}`}>{value}</p>
+    </div>
+  );
+};
+
+const Card = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+  <section className="mt-5 rounded-2xl bg-card p-4 shadow-soft animate-fade-in-up">
+    <h3 className="mb-3 flex items-center gap-1.5 font-medium">
+      {icon}
+      {title}
+    </h3>
+    {children}
+  </section>
+);
+
+const Row = ({ name, count, max, tone }: { name: string; count: number; max: number; tone: "success" | "warning" | "primary" }) => {
+  const bar = tone === "success" ? "bg-success" : tone === "warning" ? "bg-warning" : "bg-primary";
+  const w = Math.max(8, Math.round((count / max) * 100));
+  return (
+    <li>
+      <div className="flex items-center justify-between text-xs">
+        <span className="capitalize">{name}</span>
+        <span className="text-muted-foreground">{count}</span>
+      </div>
+      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div className={`h-full ${bar}`} style={{ width: `${w}%` }} />
+      </div>
+    </li>
+  );
+};
+
+export default Insights;

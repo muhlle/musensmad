@@ -1,96 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Figtree:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* IBS Food Tracker — Ocean Calm
+   All colors HSL. Tokens only. No raw colors in components. */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Surfaces */
+    --background: 192 40% 97%;
+    --foreground: 192 45% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 192 45% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 192 45% 14%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Brand — deep ocean teal */
+    --primary: 187 44% 31%;
+    --primary-foreground: 192 40% 98%;
+    --primary-soft: 186 32% 86%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary — pale aqua */
+    --secondary: 188 38% 93%;
+    --secondary-foreground: 187 44% 22%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 192 30% 94%;
+    --muted-foreground: 192 18% 42%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 186 36% 80%;
+    --accent-foreground: 187 44% 18%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Health signals */
+    --success: 152 42% 42%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 40% 92%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --warning: 35 78% 52%;
+    --warning-foreground: 0 0% 100%;
+    --warning-soft: 35 80% 94%;
 
-    --radius: 0.5rem;
+    --destructive: 4 70% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 4 75% 95%;
 
+    /* FODMAP scale */
+    --fodmap-low: 152 42% 42%;
+    --fodmap-moderate: 35 78% 52%;
+    --fodmap-high: 4 70% 52%;
+
+    --border: 188 28% 88%;
+    --input: 188 28% 88%;
+    --ring: 187 44% 31%;
+
+    --radius: 1rem;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(187 44% 31%) 0%, hsl(186 50% 42%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(192 40% 97%) 0%, hsl(186 38% 92%) 100%);
+    --gradient-card: linear-gradient(160deg, hsl(0 0% 100%) 0%, hsl(188 38% 97%) 100%);
+
+    /* Shadows */
+    --shadow-soft: 0 2px 12px -4px hsl(187 44% 31% / 0.08);
+    --shadow-card: 0 4px 24px -8px hsl(187 44% 31% / 0.12);
+    --shadow-elevated: 0 12px 40px -12px hsl(187 44% 31% / 0.22);
+
+    /* Motion */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Sidebar (unused but keep) */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 192 35% 8%;
+    --foreground: 192 30% 94%;
+    --card: 192 32% 11%;
+    --card-foreground: 192 30% 94%;
+    --popover: 192 32% 11%;
+    --popover-foreground: 192 30% 94%;
+    --primary: 186 50% 58%;
+    --primary-foreground: 192 45% 10%;
+    --primary-soft: 187 30% 22%;
+    --secondary: 192 25% 16%;
+    --secondary-foreground: 192 30% 94%;
+    --muted: 192 25% 16%;
+    --muted-foreground: 192 16% 65%;
+    --accent: 187 30% 22%;
+    --accent-foreground: 192 30% 94%;
+    --success: 152 42% 52%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 30% 18%;
+    --warning: 35 78% 58%;
+    --warning-foreground: 0 0% 10%;
+    --warning-soft: 35 40% 18%;
+    --destructive: 4 70% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 4 40% 18%;
+    --border: 192 25% 20%;
+    --input: 192 25% 20%;
+    --ring: 186 50% 58%;
+    --gradient-hero: linear-gradient(135deg, hsl(187 44% 25%) 0%, hsl(186 50% 35%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(192 35% 8%) 0%, hsl(192 32% 12%) 100%);
+    --gradient-card: linear-gradient(160deg, hsl(192 32% 11%) 0%, hsl(192 30% 14%) 100%);
   }
 }
 
@@ -98,8 +120,26 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
-  body {
-    @apply bg-background text-foreground;
+  html, body, #root {
+    @apply h-full;
   }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, h4, h5 {
+    @apply font-display tracking-tight;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-hero { background: var(--gradient-hero); }
+  .bg-gradient-soft { background: var(--gradient-soft); }
+  .bg-gradient-card { background: var(--gradient-card); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+  .transition-smooth { transition: var(--transition-smooth); }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 }
