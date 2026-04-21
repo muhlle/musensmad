@@ -7,7 +7,7 @@ import { SeverityChip } from "@/components/SeverityChip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
-import { Camera, Sparkles, AlertCircle, ChevronRight } from "lucide-react";
+import { Camera, Sparkles, AlertCircle, ChevronRight, Settings as SettingsIcon } from "lucide-react";
 import heroImg from "@/assets/hero-meal.jpg";
 
 const Index = () => {
