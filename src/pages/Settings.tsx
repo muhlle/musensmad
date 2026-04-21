@@ -2,13 +2,39 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
+import { lovable } from "@/integrations/lovable";
 import { useNavigate } from "react-router-dom";
-import { Info, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
+import { Info, LogIn, LogOut, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const Settings = () => {
   const { user } = useAnonAuth();
   const navigate = useNavigate();
+  const isAnonymous = !user || (user as { is_anonymous?: boolean }).is_anonymous === true;
+  const displayName =
+    (user?.user_metadata?.full_name as string | undefined) ||
+    (user?.user_metadata?.name as string | undefined) ||
+    user?.email ||
+    null;
+
+  const signInWithGoogle = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      toast.error("Couldn't sign in with Google");
+      return;
+    }
+    if (!result.redirected) {
+      toast.success("Signed in with Google");
+    }
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) return toast.error("Couldn't sign out");
+    toast.success("Signed out");
+  };
 
   const replayOnboarding = () => {
     localStorage.removeItem("ibs-onboarded");
@@ -31,11 +57,38 @@ const Settings = () => {
       </header>
 
       <section className="rounded-2xl bg-card p-4 shadow-soft">
-        <p className="text-xs text-muted-foreground">Anonymous account</p>
-        <p className="mt-1 truncate font-mono text-xs text-foreground">{user?.id ?? "—"}</p>
+        <p className="text-xs text-muted-foreground">
+          {isAnonymous ? "Anonymous account" : "Signed in"}
+        </p>
+        <p className="mt-1 truncate text-sm font-medium text-foreground">
+          {displayName ?? "Local-only device"}
+        </p>
+        <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{user?.id ?? "—"}</p>
+        {isAnonymous && (
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Sign in with Google to keep your meal history safe across devices.
+          </p>
+        )}
       </section>
 
       <section className="mt-4 space-y-2">
+        {isAnonymous ? (
+          <Button
+            variant="default"
+            className="w-full justify-start rounded-xl"
+            onClick={signInWithGoogle}
+          >
+            <LogIn className="h-4 w-4" /> Sign in with Google
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            className="w-full justify-start rounded-xl"
+            onClick={signOut}
+          >
+            <LogOut className="h-4 w-4" /> Sign out
+          </Button>
+        )}
         <Button variant="secondary" className="w-full justify-start rounded-xl" onClick={replayOnboarding}>
           <RotateCcw className="h-4 w-4" /> Replay onboarding
         </Button>
