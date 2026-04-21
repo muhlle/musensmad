@@ -35,7 +35,7 @@ export type Database = {
           symptom_types: Json
           title: string
           updated_at: string
-          user_id: string | null
+          user_id: string
           user_notes: string | null
         }
         Insert: {
@@ -58,7 +58,7 @@ export type Database = {
           symptom_types?: Json
           title?: string
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
           user_notes?: string | null
         }
         Update: {
@@ -81,7 +81,7 @@ export type Database = {
           symptom_types?: Json
           title?: string
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
           user_notes?: string | null
         }
         Relationships: []
