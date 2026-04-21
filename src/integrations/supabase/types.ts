@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      meals: {
+        Row: {
+          ai_confidence: string | null
+          ai_summary: string | null
+          anecdotal_notes: string | null
+          created_at: string
+          description: string | null
+          edited_at: string | null
+          evidence_notes: string | null
+          fodmap_level: Database["public"]["Enums"]["fodmap_level"]
+          fodmap_score: number | null
+          id: string
+          ingredients: Json
+          meal_at: string
+          photo_url: string | null
+          possible_triggers: Json
+          symptom_severity: Database["public"]["Enums"]["symptom_severity"]
+          symptom_started_at: string | null
+          symptom_types: Json
+          title: string
+          updated_at: string
+          user_id: string | null
+          user_notes: string | null
+        }
+        Insert: {
+          ai_confidence?: string | null
+          ai_summary?: string | null
+          anecdotal_notes?: string | null
+          created_at?: string
+          description?: string | null
+          edited_at?: string | null
+          evidence_notes?: string | null
+          fodmap_level?: Database["public"]["Enums"]["fodmap_level"]
+          fodmap_score?: number | null
+          id?: string
+          ingredients?: Json
+          meal_at?: string
+          photo_url?: string | null
+          possible_triggers?: Json
+          symptom_severity?: Database["public"]["Enums"]["symptom_severity"]
+          symptom_started_at?: string | null
+          symptom_types?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          user_notes?: string | null
+        }
+        Update: {
+          ai_confidence?: string | null
+          ai_summary?: string | null
+          anecdotal_notes?: string | null
+          created_at?: string
+          description?: string | null
+          edited_at?: string | null
+          evidence_notes?: string | null
+          fodmap_level?: Database["public"]["Enums"]["fodmap_level"]
+          fodmap_score?: number | null
+          id?: string
+          ingredients?: Json
+          meal_at?: string
+          photo_url?: string | null
+          possible_triggers?: Json
+          symptom_severity?: Database["public"]["Enums"]["symptom_severity"]
+          symptom_started_at?: string | null
+          symptom_types?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          user_notes?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +94,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      fodmap_level: "low" | "moderate" | "high" | "unknown"
+      symptom_severity: "none" | "mild" | "moderate" | "severe"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +222,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      fodmap_level: ["low", "moderate", "high", "unknown"],
+      symptom_severity: ["none", "mild", "moderate", "severe"],
+    },
   },
 } as const
