@@ -5,6 +5,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Onboarding from "./pages/Onboarding.tsx";
+import AddMeal from "./pages/AddMeal.tsx";
+import History from "./pages/History.tsx";
+import MealDetail from "./pages/MealDetail.tsx";
+import EditMeal from "./pages/EditMeal.tsx";
+import SymptomLog from "./pages/SymptomLog.tsx";
+import Insights from "./pages/Insights.tsx";
+import Settings from "./pages/Settings.tsx";
+import OnboardingGate from "./components/OnboardingGate.tsx";
 
 const queryClient = new QueryClient();
 
@@ -12,13 +21,22 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner position="top-center" />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <OnboardingGate>
+          <Routes>
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/add" element={<AddMeal />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/meal/:id" element={<MealDetail />} />
+            <Route path="/meal/:id/edit" element={<EditMeal />} />
+            <Route path="/meal/:id/symptoms" element={<SymptomLog />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </OnboardingGate>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
