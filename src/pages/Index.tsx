@@ -34,12 +34,21 @@ const Index = () => {
   return (
     <AppShell>
       {/* Header */}
-      <header className="mb-6 animate-fade-in">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">IBS Food Tracker</p>
-        <h1 className="mt-1 text-3xl font-semibold text-foreground">Hi there 👋</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tracking your meals helps you spot what your gut tolerates.
-        </p>
+      <header className="mb-6 flex items-start justify-between animate-fade-in">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">IBS Food Tracker</p>
+          <h1 className="mt-1 text-3xl font-semibold text-foreground">Hi there 👋</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tracking your meals helps you spot what your gut tolerates.
+          </p>
+        </div>
+        <Link
+          to="/settings"
+          aria-label="Settings"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-card shadow-soft text-muted-foreground hover:text-foreground transition-smooth"
+        >
+          <SettingsIcon className="h-4 w-4" />
+        </Link>
       </header>
 
       {/* Hero card */}
