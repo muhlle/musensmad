@@ -95,7 +95,7 @@ const AddMeal = () => {
 
       if (error) {
         console.error(error);
-        toast.error(error.message || "AI analysis failed");
+        toast.error(error.message || "Analysis failed");
         setAnalyzing(false);
         return;
       }
@@ -203,7 +203,7 @@ const AddMeal = () => {
       {/* Ingredients */}
       <div className="mt-5">
         <Label className="text-sm font-medium">
-          Ingredients <span className="font-normal text-muted-foreground">(optional, helps AI)</span>
+          Ingredients <span className="font-normal text-muted-foreground">(optional, improves accuracy)</span>
         </Label>
         <div className="mt-2 flex gap-2">
           <Input
@@ -253,13 +253,13 @@ const AddMeal = () => {
           </>
         ) : (
           <>
-            <Sparkles className="h-4 w-4" /> Analyze with AI
+            <Sparkles className="h-4 w-4" /> Analyze meal
           </>
         )}
       </Button>
 
       <p className="mt-3 text-center text-[11px] text-muted-foreground">
-        AI estimates may be imperfect. Not medical advice.
+        Estimates may be imperfect. Not medical advice.
       </p>
     </AppShell>
   );

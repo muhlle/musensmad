@@ -55,7 +55,7 @@ const Index = () => {
       <section className="relative overflow-hidden rounded-3xl bg-gradient-hero p-5 text-primary-foreground shadow-elevated animate-fade-in-up">
         <div className="relative z-10 max-w-[60%]">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider backdrop-blur">
-            <Sparkles className="h-3 w-3" /> AI-powered
+            <Sparkles className="h-3 w-3" /> Smart insights
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight">
             Snap a photo. Understand your meal.
@@ -144,7 +144,7 @@ const Index = () => {
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           This app does <span className="font-medium text-foreground">not</span> provide medical diagnosis.
-          AI estimates from photos may be imperfect. Always consult a healthcare professional.
+          Estimates from photos may be imperfect. Always consult a healthcare professional.
         </p>
       </section>
     </AppShell>

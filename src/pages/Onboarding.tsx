@@ -28,7 +28,7 @@ const Onboarding = () => {
             Understand what your gut <span className="text-primary">really</span> tolerates.
           </h1>
           <p className="mt-3 text-base text-muted-foreground">
-            Track meals with photos, get instant AI insights on FODMAPs and possible IBS triggers, and spot patterns over time.
+            Track meals with photos, get instant insights on FODMAPs and possible IBS triggers, and spot patterns over time.
           </p>
 
           <ul className="mt-8 space-y-4">
@@ -45,7 +45,7 @@ const Onboarding = () => {
 
           <div className="mt-8 rounded-2xl border border-border bg-card/70 p-4">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              <span className="font-semibold text-foreground">Important:</span> This app does not provide medical diagnosis or treatment. AI estimates can be imperfect — especially when analyzing food from images. Always consult a qualified healthcare professional.
+              <span className="font-semibold text-foreground">Important:</span> This app does not provide medical diagnosis or treatment. Estimates can be imperfect — especially when analyzing food from images. Always consult a qualified healthcare professional.
             </p>
           </div>
         </div>
