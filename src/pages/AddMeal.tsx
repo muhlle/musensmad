@@ -253,13 +253,13 @@ const AddMeal = () => {
           </>
         ) : (
           <>
-            <Sparkles className="h-4 w-4" /> Analyze with AI
+            <Sparkles className="h-4 w-4" /> Analyze meal
           </>
         )}
       </Button>
 
       <p className="mt-3 text-center text-[11px] text-muted-foreground">
-        AI estimates may be imperfect. Not medical advice.
+        Estimates may be imperfect. Not medical advice.
       </p>
     </AppShell>
   );
