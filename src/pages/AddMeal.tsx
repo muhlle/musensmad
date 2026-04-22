@@ -203,7 +203,7 @@ const AddMeal = () => {
       {/* Ingredients */}
       <div className="mt-5">
         <Label className="text-sm font-medium">
-          Ingredients <span className="font-normal text-muted-foreground">(optional, helps AI)</span>
+          Ingredients <span className="font-normal text-muted-foreground">(optional, improves accuracy)</span>
         </Label>
         <div className="mt-2 flex gap-2">
           <Input
