@@ -144,7 +144,7 @@ const Index = () => {
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           This app does <span className="font-medium text-foreground">not</span> provide medical diagnosis.
-          AI estimates from photos may be imperfect. Always consult a healthcare professional.
+          Estimates from photos may be imperfect. Always consult a healthcare professional.
         </p>
       </section>
     </AppShell>
