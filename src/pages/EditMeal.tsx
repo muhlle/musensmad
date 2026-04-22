@@ -7,17 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
-import { FodmapLevel, Meal } from "@/lib/meal";
+import { Meal } from "@/lib/meal";
 import { ArrowLeft, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-
-const fodmapOptions: { value: FodmapLevel; label: string; cls: string }[] = [
-  { value: "low", label: "Low", cls: "data-[selected=true]:bg-fodmap-low data-[selected=true]:text-success-foreground data-[selected=true]:border-fodmap-low" },
-  { value: "moderate", label: "Moderate", cls: "data-[selected=true]:bg-fodmap-moderate data-[selected=true]:text-warning-foreground data-[selected=true]:border-fodmap-moderate" },
-  { value: "high", label: "High", cls: "data-[selected=true]:bg-fodmap-high data-[selected=true]:text-destructive-foreground data-[selected=true]:border-fodmap-high" },
-  { value: "unknown", label: "Unknown", cls: "data-[selected=true]:bg-muted-foreground data-[selected=true]:text-background data-[selected=true]:border-muted-foreground" },
-];
 
 const EditMeal = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +20,6 @@ const EditMeal = () => {
   const [description, setDescription] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [newIng, setNewIng] = useState("");
-  const [fodmap, setFodmap] = useState<FodmapLevel>("unknown");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -45,7 +36,6 @@ const EditMeal = () => {
       setTitle(m.title);
       setDescription(m.description ?? "");
       setIngredients(m.ingredients);
-      setFodmap(m.fodmap_level);
     })();
   }, [id, user, navigate]);
 
@@ -66,7 +56,6 @@ const EditMeal = () => {
         title: title.trim().slice(0, 120),
         description: description.trim() || null,
         ingredients,
-        fodmap_level: fodmap,
       })
       .eq("id", meal.id);
     if (error) {
@@ -143,25 +132,9 @@ const EditMeal = () => {
           )}
         </div>
 
-        <div>
-          <Label className="text-sm font-medium">FODMAP level</Label>
-          <div className="mt-2 grid grid-cols-4 gap-2">
-            {fodmapOptions.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                data-selected={fodmap === o.value}
-                onClick={() => setFodmap(o.value)}
-                className={cn(
-                  "rounded-xl border-2 border-border bg-card px-2 py-2.5 text-xs font-medium transition-smooth",
-                  o.cls,
-                )}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          The FODMAP level is set by the analysis and can't be edited here.
+        </p>
       </div>
 
       <Button onClick={save} disabled={saving} size="lg" className="mt-7 h-12 w-full rounded-full">
