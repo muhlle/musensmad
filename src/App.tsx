@@ -12,6 +12,7 @@ import MealDetail from "./pages/MealDetail.tsx";
 import EditMeal from "./pages/EditMeal.tsx";
 import SymptomLog from "./pages/SymptomLog.tsx";
 import Insights from "./pages/Insights.tsx";
+import Recipes from "./pages/Recipes.tsx";
 import Settings from "./pages/Settings.tsx";
 import OnboardingGate from "./components/OnboardingGate.tsx";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/add" element={<AddMeal />} />
             <Route path="/history" element={<History />} />
             <Route path="/insights" element={<Insights />} />
+            <Route path="/recipes" element={<Recipes />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/meal/:id" element={<MealDetail />} />
             <Route path="/meal/:id/edit" element={<EditMeal />} />
