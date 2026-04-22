@@ -95,7 +95,7 @@ const AddMeal = () => {
 
       if (error) {
         console.error(error);
-        toast.error(error.message || "AI analysis failed");
+        toast.error(error.message || "Analysis failed");
         setAnalyzing(false);
         return;
       }
