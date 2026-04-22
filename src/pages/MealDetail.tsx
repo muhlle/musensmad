@@ -105,9 +105,9 @@ const MealDetail = () => {
         </div>
       )}
 
-      {/* AI summary */}
+      {/* Summary */}
       {meal.ai_summary && (
-        <Section icon={<Sparkles className="h-4 w-4" />} title="AI summary" subtitle={meal.ai_confidence ? `${meal.ai_confidence} confidence` : undefined}>
+        <Section icon={<Sparkles className="h-4 w-4" />} title="Meal summary" subtitle={meal.ai_confidence ? `${meal.ai_confidence} confidence` : undefined}>
           <p className="text-sm">{meal.ai_summary}</p>
         </Section>
       )}
