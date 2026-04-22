@@ -55,7 +55,7 @@ const Index = () => {
       <section className="relative overflow-hidden rounded-3xl bg-gradient-hero p-5 text-primary-foreground shadow-elevated animate-fade-in-up">
         <div className="relative z-10 max-w-[60%]">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider backdrop-blur">
-            <Sparkles className="h-3 w-3" /> AI-powered
+            <Sparkles className="h-3 w-3" /> Smart insights
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight">
             Snap a photo. Understand your meal.
