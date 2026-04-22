@@ -1,14 +1,18 @@
 import { useMemo, useState } from "react";
-import { Search, ExternalLink, ChefHat } from "lucide-react";
+import { Search, ChefHat, Clock, Users, ChevronDown } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { RECIPES, type Recipe } from "@/lib/recipes";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { RECIPES, CATEGORY_IMAGES, type Recipe, type RecipeCategory } from "@/lib/recipes";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES: Array<{ value: Recipe["category"] | "all"; label: string }> = [
+const CATEGORIES: Array<{ value: RecipeCategory | "all"; label: string }> = [
   { value: "all", label: "All" },
   { value: "breakfast", label: "Breakfast" },
   { value: "lunch", label: "Lunch" },
@@ -19,7 +23,8 @@ const CATEGORIES: Array<{ value: Recipe["category"] | "all"; label: string }> = 
 
 const Recipes = () => {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<Recipe["category"] | "all">("all");
+  const [category, setCategory] = useState<RecipeCategory | "all">("all");
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,7 +47,7 @@ const Recipes = () => {
           <h1 className="text-2xl font-bold tracking-tight">Low-FODMAP Recipes</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          Browse gut-friendly dishes or search by ingredient.
+          100 gut-friendly dishes — search by ingredient (e.g. chicken).
         </p>
       </header>
 
@@ -80,18 +85,85 @@ const Recipes = () => {
 
       <div className="space-y-3">
         {filtered.map((r) => (
-          <Card key={r.id} className="p-4 rounded-2xl shadow-card">
+          <RecipeCard
+            key={r.id}
+            recipe={r}
+            query={query}
+            isOpen={openId === r.id}
+            onToggle={() => setOpenId((prev) => (prev === r.id ? null : r.id))}
+          />
+        ))}
+
+        {filtered.length === 0 && (
+          <Card className="p-6 rounded-2xl text-center">
+            <p className="text-sm text-muted-foreground">
+              No recipes match "{query}". Try another ingredient.
+            </p>
+          </Card>
+        )}
+      </div>
+    </AppShell>
+  );
+};
+
+const RecipeCard = ({
+  recipe,
+  query,
+  isOpen,
+  onToggle,
+}: {
+  recipe: Recipe;
+  query: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}) => {
+  const q = query.trim().toLowerCase();
+  return (
+    <Card className="overflow-hidden rounded-2xl shadow-card">
+      <Collapsible open={isOpen} onOpenChange={onToggle}>
+        <CollapsibleTrigger className="block w-full text-left">
+          <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+            <img
+              src={CATEGORY_IMAGES[recipe.category]}
+              alt={recipe.title}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
+            <Badge variant="secondary" className="absolute top-3 right-3 capitalize">
+              {recipe.category}
+            </Badge>
+          </div>
+
+          <div className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h2 className="font-semibold leading-tight">{r.title}</h2>
-                <p className="text-sm text-muted-foreground mt-1">{r.description}</p>
+                <h2 className="font-semibold leading-tight">{recipe.title}</h2>
+                <p className="text-sm text-muted-foreground mt-1">{recipe.description}</p>
               </div>
-              <Badge variant="secondary" className="capitalize shrink-0">{r.category}</Badge>
+              <ChevronDown
+                className={cn(
+                  "h-5 w-5 mt-1 shrink-0 text-muted-foreground transition-transform",
+                  isOpen && "rotate-180",
+                )}
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 mt-3 text-[11px] text-muted-foreground">
+              {recipe.timeMinutes && (
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> {recipe.timeMinutes} min
+                </span>
+              )}
+              {recipe.servings && (
+                <span className="inline-flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Serves {recipe.servings}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {r.ingredients.map((ing) => {
-                const q = query.trim().toLowerCase();
+              {recipe.ingredients.slice(0, 6).map((ing) => {
                 const match = q && ing.toLowerCase().includes(q);
                 return (
                   <span
@@ -107,28 +179,50 @@ const Recipes = () => {
                   </span>
                 );
               })}
+              {recipe.ingredients.length > 6 && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 text-muted-foreground border-border">
+                  +{recipe.ingredients.length - 6} more
+                </span>
+              )}
             </div>
+          </div>
+        </CollapsibleTrigger>
 
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-              <span className="text-[11px] text-muted-foreground">Source: {r.source}</span>
-              <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
-                <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
-                  View <ExternalLink className="ml-1 h-3 w-3" />
-                </a>
-              </Button>
-            </div>
-          </Card>
-        ))}
+        <CollapsibleContent>
+          <div className="px-4 pb-4 pt-0 border-t border-border space-y-4">
+            <section className="pt-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Ingredients
+              </h3>
+              <ul className="space-y-1.5">
+                {recipe.ingredients.map((ing, i) => (
+                  <li key={i} className="text-sm flex gap-2">
+                    <span className="text-primary shrink-0">•</span>
+                    <span>{ing}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
 
-        {filtered.length === 0 && (
-          <Card className="p-6 rounded-2xl text-center">
-            <p className="text-sm text-muted-foreground">
-              No recipes match "{query}". Try another ingredient.
-            </p>
-          </Card>
-        )}
-      </div>
-    </AppShell>
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Instructions
+              </h3>
+              <ol className="space-y-2">
+                {recipe.instructions.map((step, i) => (
+                  <li key={i} className="text-sm flex gap-3">
+                    <span className="shrink-0 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[11px] font-semibold">
+                      {i + 1}
+                    </span>
+                    <span className="flex-1">{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   );
 };
 
