@@ -1,11 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Plus, BookOpen, BarChart3 } from "lucide-react";
+import { Home, Plus, BookOpen, BarChart3, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
   { to: "/history", label: "History", icon: BookOpen },
   { to: "/add", label: "Add", icon: Plus, primary: true },
+  { to: "/recipes", label: "Recipes", icon: ChefHat },
   { to: "/insights", label: "Insights", icon: BarChart3 },
 ];
 
@@ -15,7 +16,7 @@ export const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl">
-      <div className="mx-auto max-w-md grid grid-cols-4 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto max-w-md grid grid-cols-5 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {items.map(({ to, label, icon: Icon, primary }) => (
           <NavLink
             key={to}
