@@ -106,7 +106,7 @@ const Settings = () => {
           <ShieldAlert className="h-4 w-4 text-warning" /> Important disclaimer
         </h3>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          This app is a personal tracking tool. It does <span className="font-medium text-foreground">not</span> provide medical diagnosis, treatment, or advice. AI estimates based on photos and descriptions can be inaccurate. Always consult a qualified healthcare professional for any IBS-related concerns.
+          This app is a personal tracking tool. It does <span className="font-medium text-foreground">not</span> provide medical diagnosis, treatment, or advice. Estimates based on photos and descriptions can be inaccurate. Always consult a qualified healthcare professional for any IBS-related concerns.
         </p>
       </section>
 
