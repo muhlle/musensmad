@@ -28,7 +28,7 @@ const Onboarding = () => {
             Understand what your gut <span className="text-primary">really</span> tolerates.
           </h1>
           <p className="mt-3 text-base text-muted-foreground">
-            Track meals with photos, get instant AI insights on FODMAPs and possible IBS triggers, and spot patterns over time.
+            Track meals with photos, get instant insights on FODMAPs and possible IBS triggers, and spot patterns over time.
           </p>
 
           <ul className="mt-8 space-y-4">
