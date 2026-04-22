@@ -45,7 +45,7 @@ const Onboarding = () => {
 
           <div className="mt-8 rounded-2xl border border-border bg-card/70 p-4">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              <span className="font-semibold text-foreground">Important:</span> This app does not provide medical diagnosis or treatment. AI estimates can be imperfect — especially when analyzing food from images. Always consult a qualified healthcare professional.
+              <span className="font-semibold text-foreground">Important:</span> This app does not provide medical diagnosis or treatment. Estimates can be imperfect — especially when analyzing food from images. Always consult a qualified healthcare professional.
             </p>
           </div>
         </div>
