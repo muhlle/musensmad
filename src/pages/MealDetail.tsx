@@ -97,7 +97,7 @@ const MealDetail = () => {
         <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning-soft p-3.5 animate-fade-in">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
           <div>
-            <p className="text-xs font-medium text-warning">AI needs more info</p>
+            <p className="text-xs font-medium text-warning">More info needed</p>
             <p className="mt-0.5 text-xs text-warning/90">
               {navState.clarifyingQuestion || "Add more details and re-analyze for a better estimate."}
             </p>
