@@ -87,7 +87,7 @@ const Insights = () => {
             <Stat label="High FODMAP" value={stats.highFodmap} accent="destructive" />
           </section>
 
-          <Card icon={<AlertTriangle className="h-4 w-4 text-warning" />} title="Most common trigger ingredients">
+          <Card icon={<AlertTriangle className="h-4 w-4 text-warning" />} title="Ingredients that seem to trigger symptoms">
             {stats.topTriggers.length === 0 ? (
               <p className="text-xs text-muted-foreground">No symptom-causing meals logged yet.</p>
             ) : (
@@ -99,7 +99,7 @@ const Insights = () => {
             )}
           </Card>
 
-          <Card icon={<Heart className="h-4 w-4 text-success" />} title="Foods you tolerate well">
+          <Card icon={<Heart className="h-4 w-4 text-success" />} title="Foods you seem to tolerate well">
             {stats.topTolerated.length === 0 ? (
               <p className="text-xs text-muted-foreground">Log symptom-free meals to discover safe foods.</p>
             ) : (
