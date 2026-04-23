@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useTolerated } from "@/hooks/useTolerated";
 import { useTriggerHistory } from "@/hooks/useTriggerHistory";
 import { Meal } from "@/lib/meal";
-import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus } from "lucide-react";
+import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const Insights = () => {
@@ -13,7 +14,7 @@ const Insights = () => {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const { tolerated, add: addTolerated, remove: removeTolerated, isTolerated } = useTolerated();
-  const { history, record, remove: removeTrigger } = useTriggerHistory(user?.id);
+  const { history, record } = useTriggerHistory(user?.id);
   const [newTolerated, setNewTolerated] = useState("");
 
   useEffect(() => {
@@ -65,12 +66,21 @@ const Insights = () => {
     return { total, symptomFree, triggered, highFodmap, topTolerated, topSymptoms };
   }, [meals]);
 
-  // Persistent trigger history (sorted by count desc, top 8)
-  const persistentTriggers = useMemo(
-    () => [...history].sort((a, b) => b.count - a.count).slice(0, 8),
-    [history],
-  );
-  const maxTriggerCount = persistentTriggers[0]?.count ?? 1;
+  // Today's triggers (only meals from today with logged symptoms)
+  const todaysTriggers = useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const counts: Record<string, number> = {};
+    for (const m of meals) {
+      if (m.symptom_severity === "none") continue;
+      if (new Date(m.meal_at) < start) continue;
+      for (const t of m.possible_triggers ?? []) {
+        const k = t.toLowerCase();
+        counts[k] = (counts[k] || 0) + 1;
+      }
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [meals]);
 
   const handleAddTolerated = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,55 +123,55 @@ const Insights = () => {
             <Stat label="High FODMAP" value={stats.highFodmap} accent="destructive" />
           </section>
 
-          <Card icon={<AlertTriangle className="h-4 w-4 text-warning" />} title="Ingredients that seem to trigger symptoms">
-            {persistentTriggers.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No symptom-causing meals logged yet.</p>
-            ) : (
-              <>
-                <p className="mb-3 text-[11px] text-muted-foreground">
-                  Saved over time. Stays here even if meals are deleted.
+          <Link
+            to="/insights/triggers"
+            className="mt-5 block rounded-2xl bg-card p-4 shadow-soft animate-fade-in-up transition-smooth hover:shadow-card active:scale-[0.99]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="flex items-center gap-1.5 font-medium">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
+                  Ingredients that seem to trigger symptoms
+                </h3>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Today's view — tap for full log (7d / 14d / 1m / all time)
                 </p>
-                <ul className="space-y-2">
-                  {persistentTriggers.map((entry) => (
-                    <li key={entry.name}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="capitalize">{entry.name}</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-muted-foreground">{entry.count}×</span>
-                          {isTolerated(entry.name) ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-1.5 py-0.5 text-[10px] text-success">
-                              <Check className="h-2.5 w-2.5" /> tolerated
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => markAsTolerated(entry.name)}
-                              className="rounded-full bg-success-soft px-1.5 py-0.5 text-[10px] text-success hover:opacity-80"
-                              title="I tolerate this ingredient"
-                            >
-                              I tolerate it
-                            </button>
-                          )}
-                          <button
-                            onClick={() => removeTrigger(entry.name)}
-                            className="rounded-full p-0.5 text-muted-foreground hover:text-destructive"
-                            title="Remove from list"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                        <div
-                          className={`h-full ${isTolerated(entry.name) ? "bg-success/50" : "bg-warning"}`}
-                          style={{ width: `${Math.max(8, Math.round((entry.count / maxTriggerCount) * 100))}%` }}
-                        />
-                      </div>
-                    </li>
-                  ))}
+              </div>
+              <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            </div>
+
+            <div className="mt-3">
+              {todaysTriggers.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No symptom triggers logged today. Tap to see your full history.
+                </p>
+              ) : (
+                <ul className="flex flex-wrap gap-1.5">
+                  {todaysTriggers.map(([name, count]) => {
+                    const tol = isTolerated(name);
+                    return (
+                      <li
+                        key={name}
+                        className={
+                          tol
+                            ? "inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2.5 py-1 text-xs text-success"
+                            : "inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning-soft px-2.5 py-1 text-xs text-warning"
+                        }
+                      >
+                        <span className="capitalize">{name}</span>
+                        {count > 1 && <span className="opacity-70">×{count}</span>}
+                        {tol && <Check className="h-2.5 w-2.5" />}
+                      </li>
+                    );
+                  })}
                 </ul>
-              </>
-            )}
-          </Card>
+              )}
+            </div>
+
+            <p className="mt-3 text-[11px] font-medium text-primary">
+              View full trigger log →
+            </p>
+          </Link>
 
           <Card icon={<Heart className="h-4 w-4 text-success" />} title="Foods you seem to tolerate well">
             <p className="mb-3 text-[11px] text-muted-foreground">
