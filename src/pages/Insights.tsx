@@ -18,6 +18,7 @@ const Insights = () => {
   const [loading, setLoading] = useState(true);
   const { tolerated, add: addTolerated, remove: removeTolerated, isTolerated } = useTolerated();
   const { history, record } = useTriggerHistory(user?.id);
+  const { entries: dailyEntries } = useDailyLog(user?.id);
   const [newTolerated, setNewTolerated] = useState("");
 
   useEffect(() => {
