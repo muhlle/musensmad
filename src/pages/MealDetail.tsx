@@ -58,6 +58,11 @@ const MealDetail = () => {
     );
   }
 
+  const triggersAllTolerated =
+    meal.possible_triggers.length > 0 &&
+    meal.possible_triggers.every((t) => isTolerated(t));
+  const effectiveLevel = triggersAllTolerated && meal.fodmap_level !== "low" ? "low" : meal.fodmap_level;
+
   return (
     <AppShell>
       <div className="mb-4 flex items-center justify-between animate-fade-in">
@@ -85,8 +90,13 @@ const MealDetail = () => {
         <h1 className="mt-1 font-display text-2xl font-semibold">{meal.title}</h1>
         {meal.description && <p className="mt-1 text-sm text-muted-foreground">{meal.description}</p>}
         <div className="mt-3 flex flex-wrap gap-1.5">
-          <FodmapBadge level={meal.fodmap_level} score={meal.fodmap_score} />
+          <FodmapBadge level={effectiveLevel} score={meal.fodmap_score} />
           <SeverityChip severity={meal.symptom_severity} />
+          {triggersAllTolerated && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2 py-1 text-[10px] text-success">
+              <Check className="h-2.5 w-2.5" /> all triggers tolerated
+            </span>
+          )}
           {meal.edited_at && (
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
               <Pencil className="h-2.5 w-2.5" /> edited {format(new Date(meal.edited_at), "MMM d")}
