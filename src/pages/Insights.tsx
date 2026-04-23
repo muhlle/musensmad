@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useTolerated } from "@/hooks/useTolerated";
 import { useTriggerHistory } from "@/hooks/useTriggerHistory";
+import { useDailyLog } from "@/hooks/useDailyLog";
 import { Meal } from "@/lib/meal";
-import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight } from "lucide-react";
+import { analyseTriggers } from "@/lib/triggerAnalysis";
+import { scanForAlarmSymptoms } from "@/lib/safety";
+import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight, FileText, ShieldAlert, Activity } from "lucide-react";
 import { toast } from "sonner";
 
 const Insights = () => {
@@ -15,6 +18,7 @@ const Insights = () => {
   const [loading, setLoading] = useState(true);
   const { tolerated, add: addTolerated, remove: removeTolerated, isTolerated } = useTolerated();
   const { history, record } = useTriggerHistory(user?.id);
+  const { entries: dailyEntries } = useDailyLog(user?.id);
   const [newTolerated, setNewTolerated] = useState("");
 
   useEffect(() => {
@@ -65,6 +69,27 @@ const Insights = () => {
 
     return { total, symptomFree, triggered, highFodmap, topTolerated, topSymptoms };
   }, [meals]);
+
+  // Trigger correlation engine — uses meals + daily log to spot patterns
+  const correlations = useMemo(
+    () => analyseTriggers(meals, dailyEntries).slice(0, 5),
+    [meals, dailyEntries],
+  );
+
+  // Alarm-symptom scan across all user-entered text
+  const alarms = useMemo(() => {
+    const texts: { text: string; source: string }[] = [];
+    for (const m of meals) {
+      if (m.user_notes) texts.push({ text: m.user_notes, source: `meal: ${m.title}` });
+    }
+    for (const d of Object.values(dailyEntries)) {
+      if (d.notes) texts.push({ text: d.notes, source: `daily ${d.date}` });
+      if (d.bowelMovements?.some((b) => b.alarm)) {
+        texts.push({ text: "blood mucus", source: `bowel log ${d.date}` });
+      }
+    }
+    return scanForAlarmSymptoms(texts);
+  }, [meals, dailyEntries]);
 
   // Today's triggers (only meals from today with logged symptoms)
   const todaysTriggers = useMemo(() => {
@@ -122,6 +147,67 @@ const Insights = () => {
             <Stat label="With symptoms" value={stats.triggered} accent="warning" />
             <Stat label="High FODMAP" value={stats.highFodmap} accent="destructive" />
           </section>
+
+          {alarms.length > 0 && (
+            <section className="mt-5 rounded-2xl border border-destructive/30 bg-destructive-soft p-4 animate-fade-in-up">
+              <h3 className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+                <ShieldAlert className="h-4 w-4" /> Please consider seeing a doctor
+              </h3>
+              <p className="mt-1 text-[11px] text-destructive/90">
+                You've logged symptoms that aren't typical for IBS alone:
+              </p>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {alarms.map((a) => (
+                  <li key={a.key} className="rounded-full bg-destructive/15 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                    {a.label}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] text-destructive/80">
+                These don't mean something is wrong, but they should be evaluated by a healthcare professional.
+              </p>
+            </section>
+          )}
+
+          {correlations.length > 0 && (
+            <section className="mt-5 rounded-2xl bg-card p-4 shadow-soft animate-fade-in-up">
+              <h3 className="mb-1 flex items-center gap-1.5 font-medium">
+                <Activity className="h-4 w-4 text-primary" /> Possible correlations
+              </h3>
+              <p className="mb-3 text-[11px] text-muted-foreground">
+                Patterns from your data — not certainties. More entries = better signal.
+              </p>
+              <ul className="space-y-2.5">
+                {correlations.map((c) => (
+                  <li key={c.ingredient} className="rounded-xl border border-border bg-background p-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium capitalize">{c.ingredient}</span>
+                      <span
+                        className={
+                          c.confidence === "high"
+                            ? "rounded-full bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning"
+                            : c.confidence === "moderate"
+                            ? "rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+                            : "rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                        }
+                      >
+                        {c.confidence} confidence
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Reacted {c.reactions}/{c.exposures} exposures ({Math.round(c.reactionRate * 100)}%)
+                    </p>
+                    {c.altExplanationHint && (
+                      <p className="mt-1 text-[11px] italic text-muted-foreground">{c.altExplanationHint}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                Tip: try not to test multiple suspect foods on the same day.
+              </p>
+            </section>
+          )}
 
           <Link
             to="/insights/triggers"
@@ -235,8 +321,22 @@ const Insights = () => {
             )}
           </Card>
 
+          <Link
+            to="/insights/report"
+            className="mt-5 flex items-center justify-between rounded-2xl bg-primary p-4 text-primary-foreground shadow-card transition-smooth hover:opacity-95 active:scale-[0.99] animate-fade-in-up"
+          >
+            <div className="flex items-center gap-2.5">
+              <FileText className="h-4 w-4" />
+              <div>
+                <p className="text-sm font-medium">Generate doctor / dietitian report</p>
+                <p className="text-[11px] opacity-80">Markdown summary you can download or share.</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 opacity-80" />
+          </Link>
+
           <p className="mt-6 text-center text-[11px] text-muted-foreground">
-            Insights are observational and not a clinical diagnosis.
+            Insights are observational and not a clinical diagnosis. IBS is individual — patterns take time to identify.
           </p>
         </>
       )}

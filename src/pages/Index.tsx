@@ -7,7 +7,7 @@ import { SeverityChip } from "@/components/SeverityChip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
-import { Camera, Sparkles, AlertCircle, ChevronRight, Settings as SettingsIcon } from "lucide-react";
+import { Camera, Sparkles, AlertCircle, ChevronRight, Settings as SettingsIcon, CalendarHeart } from "lucide-react";
 import heroImg from "@/assets/hero-meal.jpg";
 
 const Index = () => {
@@ -89,6 +89,23 @@ const Index = () => {
           <p className="mt-1 text-2xl font-semibold text-success">{symptomFree}</p>
         </div>
       </section>
+
+      {/* Daily log CTA */}
+      <Link
+        to="/daily"
+        className="mt-4 flex items-center justify-between rounded-2xl bg-card p-4 shadow-soft transition-smooth hover:shadow-card active:scale-[0.99] animate-fade-in-up"
+      >
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
+            <CalendarHeart className="h-4 w-4" />
+          </span>
+          <div>
+            <p className="text-sm font-medium">Today's daily log</p>
+            <p className="text-[11px] text-muted-foreground">Stress, sleep, bowel movements — context matters.</p>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       {/* Recent meals */}
       <section className="mt-7">

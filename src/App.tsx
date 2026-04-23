@@ -14,6 +14,8 @@ import SymptomLog from "./pages/SymptomLog.tsx";
 import Insights from "./pages/Insights.tsx";
 import TriggersLog from "./pages/TriggersLog.tsx";
 import Settings from "./pages/Settings.tsx";
+import DailyLog from "./pages/DailyLog.tsx";
+import Report from "./pages/Report.tsx";
 import OnboardingGate from "./components/OnboardingGate.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/history" element={<History />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/insights/triggers" element={<TriggersLog />} />
+            <Route path="/insights/report" element={<Report />} />
+            <Route path="/daily" element={<DailyLog />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/meal/:id" element={<MealDetail />} />
             <Route path="/meal/:id/edit" element={<EditMeal />} />
