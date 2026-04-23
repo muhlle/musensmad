@@ -321,8 +321,22 @@ const Insights = () => {
             )}
           </Card>
 
+          <Link
+            to="/insights/report"
+            className="mt-5 flex items-center justify-between rounded-2xl bg-primary p-4 text-primary-foreground shadow-card transition-smooth hover:opacity-95 active:scale-[0.99] animate-fade-in-up"
+          >
+            <div className="flex items-center gap-2.5">
+              <FileText className="h-4 w-4" />
+              <div>
+                <p className="text-sm font-medium">Generate doctor / dietitian report</p>
+                <p className="text-[11px] opacity-80">Markdown summary you can download or share.</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 opacity-80" />
+          </Link>
+
           <p className="mt-6 text-center text-[11px] text-muted-foreground">
-            Insights are observational and not a clinical diagnosis.
+            Insights are observational and not a clinical diagnosis. IBS is individual — patterns take time to identify.
           </p>
         </>
       )}
