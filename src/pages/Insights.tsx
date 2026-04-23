@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useTolerated } from "@/hooks/useTolerated";
 import { useTriggerHistory } from "@/hooks/useTriggerHistory";
+import { useDailyLog } from "@/hooks/useDailyLog";
 import { Meal } from "@/lib/meal";
-import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight } from "lucide-react";
+import { analyseTriggers } from "@/lib/triggerAnalysis";
+import { scanForAlarmSymptoms } from "@/lib/safety";
+import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight, FileText, ShieldAlert, Activity } from "lucide-react";
 import { toast } from "sonner";
 
 const Insights = () => {
