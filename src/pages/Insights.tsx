@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useTolerated } from "@/hooks/useTolerated";
 import { useTriggerHistory } from "@/hooks/useTriggerHistory";
 import { Meal } from "@/lib/meal";
-import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus } from "lucide-react";
+import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const Insights = () => {
