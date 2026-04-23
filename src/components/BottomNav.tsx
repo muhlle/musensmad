@@ -1,13 +1,13 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Plus, BookOpen, BarChart3, ChefHat } from "lucide-react";
+import { Home, Plus, BookOpen, BarChart3, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
   { to: "/history", label: "History", icon: BookOpen },
   { to: "/add", label: "Add", icon: Plus, primary: true },
-  { to: "/recipes", label: "Recipes", icon: ChefHat },
   { to: "/insights", label: "Insights", icon: BarChart3 },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export const BottomNav = () => {
