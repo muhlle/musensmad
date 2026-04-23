@@ -141,12 +141,39 @@ const MealDetail = () => {
       {meal.possible_triggers.length > 0 && (
         <Section title="Possible IBS triggers in this meal">
           <ul className="flex flex-wrap gap-1.5">
-            {meal.possible_triggers.map((t, i) => (
-              <li key={i} className="rounded-full border border-warning/30 bg-warning-soft px-2.5 py-1 text-xs text-warning">
-                {t}
-              </li>
-            ))}
+            {meal.possible_triggers.map((t, i) => {
+              const tol = isTolerated(t);
+              return (
+                <li key={i} className="inline-flex items-center gap-1">
+                  <span
+                    className={
+                      tol
+                        ? "rounded-full border border-success/30 bg-success-soft px-2.5 py-1 text-xs text-success line-through opacity-80"
+                        : "rounded-full border border-warning/30 bg-warning-soft px-2.5 py-1 text-xs text-warning"
+                    }
+                  >
+                    {t}
+                    {tol && <Check className="ml-1 inline h-3 w-3" />}
+                  </span>
+                  {!tol && (
+                    <button
+                      onClick={() => {
+                        addTolerated(t);
+                        toast.success(`"${t}" marked as tolerated`);
+                      }}
+                      className="rounded-full bg-success-soft px-2 py-1 text-[10px] text-success hover:opacity-80"
+                      title="I tolerate this ingredient"
+                    >
+                      I tolerate it
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Mark anything you tolerate well — it won't be flagged as a trigger.
+          </p>
         </Section>
       )}
 
