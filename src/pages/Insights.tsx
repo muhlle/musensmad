@@ -70,6 +70,27 @@ const Insights = () => {
     return { total, symptomFree, triggered, highFodmap, topTolerated, topSymptoms };
   }, [meals]);
 
+  // Trigger correlation engine — uses meals + daily log to spot patterns
+  const correlations = useMemo(
+    () => analyseTriggers(meals, dailyEntries).slice(0, 5),
+    [meals, dailyEntries],
+  );
+
+  // Alarm-symptom scan across all user-entered text
+  const alarms = useMemo(() => {
+    const texts: { text: string; source: string }[] = [];
+    for (const m of meals) {
+      if (m.user_notes) texts.push({ text: m.user_notes, source: `meal: ${m.title}` });
+    }
+    for (const d of Object.values(dailyEntries)) {
+      if (d.notes) texts.push({ text: d.notes, source: `daily ${d.date}` });
+      if (d.bowelMovements?.some((b) => b.alarm)) {
+        texts.push({ text: "blood mucus", source: `bowel log ${d.date}` });
+      }
+    }
+    return scanForAlarmSymptoms(texts);
+  }, [meals, dailyEntries]);
+
   // Today's triggers (only meals from today with logged symptoms)
   const todaysTriggers = useMemo(() => {
     const start = new Date();
