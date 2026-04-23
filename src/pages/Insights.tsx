@@ -2,21 +2,37 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
+import { useTolerated } from "@/hooks/useTolerated";
+import { useTriggerHistory } from "@/hooks/useTriggerHistory";
 import { Meal } from "@/lib/meal";
-import { TrendingUp, AlertTriangle, Heart, Sparkles } from "lucide-react";
+import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 const Insights = () => {
   const { user } = useAnonAuth();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
+  const { tolerated, add: addTolerated, remove: removeTolerated, isTolerated } = useTolerated();
+  const { history, record, remove: removeTrigger } = useTriggerHistory(user?.id);
+  const [newTolerated, setNewTolerated] = useState("");
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data } = await supabase.from("meals").select("*").order("meal_at", { ascending: false });
-      setMeals((data ?? []) as unknown as Meal[]);
+      const list = (data ?? []) as unknown as Meal[];
+      setMeals(list);
       setLoading(false);
+
+      // Merge any triggers from symptom-causing meals into the persistent log.
+      // This way the trigger list grows over time and never resets.
+      for (const m of list) {
+        if (m.symptom_severity === "none") continue;
+        if (!m.possible_triggers?.length) continue;
+        record(m.possible_triggers, m.meal_at);
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const stats = useMemo(() => {
@@ -25,18 +41,7 @@ const Insights = () => {
     const triggered = meals.filter((m) => m.symptom_severity !== "none").length;
     const highFodmap = meals.filter((m) => m.fodmap_level === "high").length;
 
-    // Top trigger ingredients
-    const triggerCounts: Record<string, number> = {};
-    for (const m of meals) {
-      if (m.symptom_severity === "none") continue;
-      for (const t of m.possible_triggers) {
-        const k = t.toLowerCase();
-        triggerCounts[k] = (triggerCounts[k] || 0) + 1;
-      }
-    }
-    const topTriggers = Object.entries(triggerCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-    // Tolerated foods (symptom-free meals' ingredients)
+    // Tolerated foods (symptom-free meals' ingredients) — observed from data
     const toleratedCounts: Record<string, number> = {};
     for (const m of meals) {
       if (m.symptom_severity !== "none") continue;
@@ -57,8 +62,29 @@ const Insights = () => {
     }
     const topSymptoms = Object.entries(symptomCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-    return { total, symptomFree, triggered, highFodmap, topTriggers, topTolerated, topSymptoms };
+    return { total, symptomFree, triggered, highFodmap, topTolerated, topSymptoms };
   }, [meals]);
+
+  // Persistent trigger history (sorted by count desc, top 8)
+  const persistentTriggers = useMemo(
+    () => [...history].sort((a, b) => b.count - a.count).slice(0, 8),
+    [history],
+  );
+  const maxTriggerCount = persistentTriggers[0]?.count ?? 1;
+
+  const handleAddTolerated = (e: React.FormEvent) => {
+    e.preventDefault();
+    const v = newTolerated.trim();
+    if (!v) return;
+    addTolerated(v);
+    setNewTolerated("");
+    toast.success(`Added "${v}" to tolerated foods`);
+  };
+
+  const markAsTolerated = (name: string) => {
+    addTolerated(name);
+    toast.success(`"${name}" marked as tolerated`);
+  };
 
   return (
     <AppShell>
@@ -72,7 +98,7 @@ const Insights = () => {
         <div className="space-y-3">
           {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-muted/60 animate-pulse-soft" />)}
         </div>
-      ) : meals.length === 0 ? (
+      ) : meals.length === 0 && history.length === 0 ? (
         <div className="mt-12 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-muted-foreground" />
           <p className="mt-3 text-sm font-medium">No data yet</p>
@@ -88,26 +114,102 @@ const Insights = () => {
           </section>
 
           <Card icon={<AlertTriangle className="h-4 w-4 text-warning" />} title="Ingredients that seem to trigger symptoms">
-            {stats.topTriggers.length === 0 ? (
+            {persistentTriggers.length === 0 ? (
               <p className="text-xs text-muted-foreground">No symptom-causing meals logged yet.</p>
             ) : (
-              <ul className="space-y-2">
-                {stats.topTriggers.map(([name, count]) => (
-                  <Row key={name} name={name} count={count} max={stats.topTriggers[0][1]} tone="warning" />
-                ))}
-              </ul>
+              <>
+                <p className="mb-3 text-[11px] text-muted-foreground">
+                  Saved over time. Stays here even if meals are deleted.
+                </p>
+                <ul className="space-y-2">
+                  {persistentTriggers.map((entry) => (
+                    <li key={entry.name}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="capitalize">{entry.name}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-muted-foreground">{entry.count}×</span>
+                          {isTolerated(entry.name) ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-1.5 py-0.5 text-[10px] text-success">
+                              <Check className="h-2.5 w-2.5" /> tolerated
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => markAsTolerated(entry.name)}
+                              className="rounded-full bg-success-soft px-1.5 py-0.5 text-[10px] text-success hover:opacity-80"
+                              title="I tolerate this ingredient"
+                            >
+                              I tolerate it
+                            </button>
+                          )}
+                          <button
+                            onClick={() => removeTrigger(entry.name)}
+                            className="rounded-full p-0.5 text-muted-foreground hover:text-destructive"
+                            title="Remove from list"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`h-full ${isTolerated(entry.name) ? "bg-success/50" : "bg-warning"}`}
+                          style={{ width: `${Math.max(8, Math.round((entry.count / maxTriggerCount) * 100))}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </Card>
 
           <Card icon={<Heart className="h-4 w-4 text-success" />} title="Foods you seem to tolerate well">
-            {stats.topTolerated.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Log symptom-free meals to discover safe foods.</p>
-            ) : (
-              <ul className="space-y-2">
-                {stats.topTolerated.map(([name, count]) => (
-                  <Row key={name} name={name} count={count} max={stats.topTolerated[0][1]} tone="success" />
+            <p className="mb-3 text-[11px] text-muted-foreground">
+              Whitelisted ingredients won't be flagged as triggers — even if their FODMAP score is high.
+            </p>
+
+            {tolerated.length > 0 && (
+              <ul className="mb-3 flex flex-wrap gap-1.5">
+                {tolerated.map((name) => (
+                  <li key={name} className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2 py-1 text-xs text-success">
+                    <span className="capitalize">{name}</span>
+                    <button
+                      onClick={() => removeTolerated(name)}
+                      className="rounded-full hover:opacity-70"
+                      title="Remove"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </li>
                 ))}
               </ul>
+            )}
+
+            <form onSubmit={handleAddTolerated} className="flex gap-2">
+              <input
+                type="text"
+                value={newTolerated}
+                onChange={(e) => setNewTolerated(e.target.value)}
+                placeholder="Add an ingredient (e.g. garlic)"
+                className="flex-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
+              >
+                <Plus className="h-3 w-3" /> Add
+              </button>
+            </form>
+
+            {stats.topTolerated.length > 0 && (
+              <div className="mt-4 border-t border-border pt-3">
+                <p className="mb-2 text-[11px] text-muted-foreground">Observed from your symptom-free meals:</p>
+                <ul className="space-y-2">
+                  {stats.topTolerated.map(([name, count]) => (
+                    <Row key={name} name={name} count={count} max={stats.topTolerated[0][1]} tone="success" />
+                  ))}
+                </ul>
+              </div>
             )}
           </Card>
 
