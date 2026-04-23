@@ -8,8 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
 import { format } from "date-fns";
-import { ArrowLeft, Pencil, Trash2, AlertCircle, Sparkles, BookOpen, MessageCircle, ChevronRight } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, AlertCircle, Sparkles, BookOpen, MessageCircle, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useTolerated } from "@/hooks/useTolerated";
 
 const MealDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ const MealDetail = () => {
 
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isTolerated, add: addTolerated } = useTolerated();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -56,6 +58,11 @@ const MealDetail = () => {
     );
   }
 
+  const triggersAllTolerated =
+    meal.possible_triggers.length > 0 &&
+    meal.possible_triggers.every((t) => isTolerated(t));
+  const effectiveLevel = triggersAllTolerated && meal.fodmap_level !== "low" ? "low" : meal.fodmap_level;
+
   return (
     <AppShell>
       <div className="mb-4 flex items-center justify-between animate-fade-in">
@@ -83,8 +90,13 @@ const MealDetail = () => {
         <h1 className="mt-1 font-display text-2xl font-semibold">{meal.title}</h1>
         {meal.description && <p className="mt-1 text-sm text-muted-foreground">{meal.description}</p>}
         <div className="mt-3 flex flex-wrap gap-1.5">
-          <FodmapBadge level={meal.fodmap_level} score={meal.fodmap_score} />
+          <FodmapBadge level={effectiveLevel} score={meal.fodmap_score} />
           <SeverityChip severity={meal.symptom_severity} />
+          {triggersAllTolerated && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2 py-1 text-[10px] text-success">
+              <Check className="h-2.5 w-2.5" /> all triggers tolerated
+            </span>
+          )}
           {meal.edited_at && (
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
               <Pencil className="h-2.5 w-2.5" /> edited {format(new Date(meal.edited_at), "MMM d")}
@@ -129,12 +141,39 @@ const MealDetail = () => {
       {meal.possible_triggers.length > 0 && (
         <Section title="Possible IBS triggers in this meal">
           <ul className="flex flex-wrap gap-1.5">
-            {meal.possible_triggers.map((t, i) => (
-              <li key={i} className="rounded-full border border-warning/30 bg-warning-soft px-2.5 py-1 text-xs text-warning">
-                {t}
-              </li>
-            ))}
+            {meal.possible_triggers.map((t, i) => {
+              const tol = isTolerated(t);
+              return (
+                <li key={i} className="inline-flex items-center gap-1">
+                  <span
+                    className={
+                      tol
+                        ? "rounded-full border border-success/30 bg-success-soft px-2.5 py-1 text-xs text-success line-through opacity-80"
+                        : "rounded-full border border-warning/30 bg-warning-soft px-2.5 py-1 text-xs text-warning"
+                    }
+                  >
+                    {t}
+                    {tol && <Check className="ml-1 inline h-3 w-3" />}
+                  </span>
+                  {!tol && (
+                    <button
+                      onClick={() => {
+                        addTolerated(t);
+                        toast.success(`"${t}" marked as tolerated`);
+                      }}
+                      className="rounded-full bg-success-soft px-2 py-1 text-[10px] text-success hover:opacity-80"
+                      title="I tolerate this ingredient"
+                    >
+                      I tolerate it
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Mark anything you tolerate well — it won't be flagged as a trigger.
+          </p>
         </Section>
       )}
 
