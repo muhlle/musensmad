@@ -22,6 +22,7 @@ const MealDetail = () => {
 
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isTolerated, add: addTolerated } = useTolerated();
 
   useEffect(() => {
     if (!user || !id) return;
