@@ -8,8 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
 import { format } from "date-fns";
-import { ArrowLeft, Pencil, Trash2, AlertCircle, Sparkles, BookOpen, MessageCircle, ChevronRight } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, AlertCircle, Sparkles, BookOpen, MessageCircle, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useTolerated } from "@/hooks/useTolerated";
 
 const MealDetail = () => {
   const { id } = useParams<{ id: string }>();
