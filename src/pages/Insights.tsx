@@ -14,7 +14,7 @@ const Insights = () => {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const { tolerated, add: addTolerated, remove: removeTolerated, isTolerated } = useTolerated();
-  const { history, record, remove: removeTrigger } = useTriggerHistory(user?.id);
+  const { history, record } = useTriggerHistory(user?.id);
   const [newTolerated, setNewTolerated] = useState("");
 
   useEffect(() => {
