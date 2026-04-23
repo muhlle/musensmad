@@ -66,12 +66,21 @@ const Insights = () => {
     return { total, symptomFree, triggered, highFodmap, topTolerated, topSymptoms };
   }, [meals]);
 
-  // Persistent trigger history (sorted by count desc, top 8)
-  const persistentTriggers = useMemo(
-    () => [...history].sort((a, b) => b.count - a.count).slice(0, 8),
-    [history],
-  );
-  const maxTriggerCount = persistentTriggers[0]?.count ?? 1;
+  // Today's triggers (only meals from today with logged symptoms)
+  const todaysTriggers = useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const counts: Record<string, number> = {};
+    for (const m of meals) {
+      if (m.symptom_severity === "none") continue;
+      if (new Date(m.meal_at) < start) continue;
+      for (const t of m.possible_triggers ?? []) {
+        const k = t.toLowerCase();
+        counts[k] = (counts[k] || 0) + 1;
+      }
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [meals]);
 
   const handleAddTolerated = (e: React.FormEvent) => {
     e.preventDefault();
