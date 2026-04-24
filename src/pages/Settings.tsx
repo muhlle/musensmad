@@ -4,12 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { lovable } from "@/integrations/lovable";
 import { useNavigate } from "react-router-dom";
-import { Info, LogIn, LogOut, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
+import { Info, Languages, LogIn, LogOut, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n";
 
 const Settings = () => {
   const { user } = useAnonAuth();
   const navigate = useNavigate();
+  const { t, lang, setLang } = useT();
   const isAnonymous = !user || (user as { is_anonymous?: boolean }).is_anonymous === true;
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ||
