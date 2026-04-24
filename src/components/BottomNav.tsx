@@ -1,18 +1,20 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Plus, BookOpen, BarChart3, CalendarHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const items = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/history", label: "History", icon: BookOpen },
-  { to: "/add", label: "Add", icon: Plus, primary: true },
-  { to: "/daily", label: "Daily", icon: CalendarHeart },
-  { to: "/insights", label: "Insights", icon: BarChart3 },
-];
+import { useT } from "@/lib/i18n";
 
 export const BottomNav = () => {
   const location = useLocation();
+  const { t } = useT();
   if (location.pathname.startsWith("/onboarding")) return null;
+
+  const items = [
+    { to: "/", label: t("nav.home"), icon: Home },
+    { to: "/history", label: t("nav.history"), icon: BookOpen },
+    { to: "/add", label: t("nav.add"), icon: Plus, primary: true },
+    { to: "/daily", label: t("nav.daily"), icon: CalendarHeart },
+    { to: "/insights", label: t("nav.insights"), icon: BarChart3 },
+  ];
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl">
@@ -43,3 +45,4 @@ export const BottomNav = () => {
     </nav>
   );
 };
+

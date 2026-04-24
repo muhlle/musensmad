@@ -2,3 +2,6 @@ project_id = "cgjqitrximygekmvtbow"
 
 [functions.analyze-meal]
 verify_jwt = false
+
+[functions.ai-analyzer]
+verify_jwt = false

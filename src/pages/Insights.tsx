@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
+import { AnalyzerCard } from "@/components/AnalyzerCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useTolerated } from "@/hooks/useTolerated";
@@ -9,11 +10,13 @@ import { useDailyLog } from "@/hooks/useDailyLog";
 import { Meal } from "@/lib/meal";
 import { analyseTriggers } from "@/lib/triggerAnalysis";
 import { scanForAlarmSymptoms } from "@/lib/safety";
+import { useT } from "@/lib/i18n";
 import { TrendingUp, AlertTriangle, Heart, Sparkles, Check, X, Plus, ChevronRight, FileText, ShieldAlert, Activity } from "lucide-react";
 import { toast } from "sonner";
 
 const Insights = () => {
   const { user } = useAnonAuth();
+  const { t } = useT();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const { tolerated, add: addTolerated, remove: removeTolerated, isTolerated } = useTolerated();
@@ -29,8 +32,6 @@ const Insights = () => {
       setMeals(list);
       setLoading(false);
 
-      // Merge any triggers from symptom-causing meals into the persistent log.
-      // This way the trigger list grows over time and never resets.
       for (const m of list) {
         if (m.symptom_severity === "none") continue;
         if (!m.possible_triggers?.length) continue;
@@ -46,7 +47,6 @@ const Insights = () => {
     const triggered = meals.filter((m) => m.symptom_severity !== "none").length;
     const highFodmap = meals.filter((m) => m.fodmap_level === "high").length;
 
-    // Tolerated foods (symptom-free meals' ingredients) — observed from data
     const toleratedCounts: Record<string, number> = {};
     for (const m of meals) {
       if (m.symptom_severity !== "none") continue;
@@ -57,7 +57,6 @@ const Insights = () => {
     }
     const topTolerated = Object.entries(toleratedCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-    // Symptom frequency
     const symptomCounts: Record<string, number> = {};
     for (const m of meals) {
       for (const s of m.symptom_types) {
@@ -70,13 +69,11 @@ const Insights = () => {
     return { total, symptomFree, triggered, highFodmap, topTolerated, topSymptoms };
   }, [meals]);
 
-  // Trigger correlation engine — uses meals + daily log to spot patterns
   const correlations = useMemo(
     () => analyseTriggers(meals, dailyEntries).slice(0, 5),
     [meals, dailyEntries],
   );
 
-  // Alarm-symptom scan across all user-entered text
   const alarms = useMemo(() => {
     const texts: { text: string; source: string }[] = [];
     for (const m of meals) {
@@ -91,7 +88,6 @@ const Insights = () => {
     return scanForAlarmSymptoms(texts);
   }, [meals, dailyEntries]);
 
-  // Today's triggers (only meals from today with logged symptoms)
   const todaysTriggers = useMemo(() => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -99,8 +95,8 @@ const Insights = () => {
     for (const m of meals) {
       if (m.symptom_severity === "none") continue;
       if (new Date(m.meal_at) < start) continue;
-      for (const t of m.possible_triggers ?? []) {
-        const k = t.toLowerCase();
+      for (const tr of m.possible_triggers ?? []) {
+        const k = tr.toLowerCase();
         counts[k] = (counts[k] || 0) + 1;
       }
     }
@@ -113,20 +109,15 @@ const Insights = () => {
     if (!v) return;
     addTolerated(v);
     setNewTolerated("");
-    toast.success(`Added "${v}" to tolerated foods`);
-  };
-
-  const markAsTolerated = (name: string) => {
-    addTolerated(name);
-    toast.success(`"${name}" marked as tolerated`);
+    toast.success(`+ ${v}`);
   };
 
   return (
     <AppShell>
       <header className="mb-5 animate-fade-in">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Patterns</p>
-        <h1 className="mt-1 font-display text-2xl font-semibold">Insights</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Trends across your tracked meals.</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("insights.kicker")}</p>
+        <h1 className="mt-1 font-display text-2xl font-semibold">{t("insights.title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("insights.subtitle")}</p>
       </header>
 
       {loading ? (
@@ -136,26 +127,24 @@ const Insights = () => {
       ) : meals.length === 0 && history.length === 0 ? (
         <div className="mt-12 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
           <Sparkles className="mx-auto h-6 w-6 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium">No data yet</p>
-          <p className="mt-1 text-xs text-muted-foreground">Track a few meals to start seeing patterns.</p>
+          <p className="mt-3 text-sm font-medium">{t("insights.empty.title")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("insights.empty.body")}</p>
         </div>
       ) : (
         <>
           <section className="grid grid-cols-2 gap-3 animate-fade-in-up">
-            <Stat label="Meals tracked" value={stats.total} />
-            <Stat label="Symptom-free" value={stats.symptomFree} accent="success" />
-            <Stat label="With symptoms" value={stats.triggered} accent="warning" />
-            <Stat label="High FODMAP" value={stats.highFodmap} accent="destructive" />
+            <Stat label={t("insights.stat.tracked")} value={stats.total} />
+            <Stat label={t("insights.stat.free")} value={stats.symptomFree} accent="success" />
+            <Stat label={t("insights.stat.with")} value={stats.triggered} accent="warning" />
+            <Stat label={t("insights.stat.high")} value={stats.highFodmap} accent="destructive" />
           </section>
 
           {alarms.length > 0 && (
             <section className="mt-5 rounded-2xl border border-destructive/30 bg-destructive-soft p-4 animate-fade-in-up">
               <h3 className="flex items-center gap-1.5 text-sm font-medium text-destructive">
-                <ShieldAlert className="h-4 w-4" /> Please consider seeing a doctor
+                <ShieldAlert className="h-4 w-4" /> {t("insights.alarm.title")}
               </h3>
-              <p className="mt-1 text-[11px] text-destructive/90">
-                You've logged symptoms that aren't typical for IBS alone:
-              </p>
+              <p className="mt-1 text-[11px] text-destructive/90">{t("insights.alarm.body")}</p>
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {alarms.map((a) => (
                   <li key={a.key} className="rounded-full bg-destructive/15 px-2 py-0.5 text-[11px] font-medium text-destructive">
@@ -163,20 +152,16 @@ const Insights = () => {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-[11px] text-destructive/80">
-                These don't mean something is wrong, but they should be evaluated by a healthcare professional.
-              </p>
+              <p className="mt-2 text-[11px] text-destructive/80">{t("insights.alarm.foot")}</p>
             </section>
           )}
 
           {correlations.length > 0 && (
             <section className="mt-5 rounded-2xl bg-card p-4 shadow-soft animate-fade-in-up">
               <h3 className="mb-1 flex items-center gap-1.5 font-medium">
-                <Activity className="h-4 w-4 text-primary" /> Possible correlations
+                <Activity className="h-4 w-4 text-primary" /> {t("insights.corr.title")}
               </h3>
-              <p className="mb-3 text-[11px] text-muted-foreground">
-                Patterns from your data — not certainties. More entries = better signal.
-              </p>
+              <p className="mb-3 text-[11px] text-muted-foreground">{t("insights.corr.body")}</p>
               <ul className="space-y-2.5">
                 {correlations.map((c) => (
                   <li key={c.ingredient} className="rounded-xl border border-border bg-background p-2.5">
@@ -191,11 +176,11 @@ const Insights = () => {
                             : "rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
                         }
                       >
-                        {c.confidence} confidence
+                        {c.confidence}
                       </span>
                     </div>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      Reacted {c.reactions}/{c.exposures} exposures ({Math.round(c.reactionRate * 100)}%)
+                      {t("insights.corr.reacted")} {c.reactions}/{c.exposures} {t("insights.corr.exposures")} ({Math.round(c.reactionRate * 100)}%)
                     </p>
                     {c.altExplanationHint && (
                       <p className="mt-1 text-[11px] italic text-muted-foreground">{c.altExplanationHint}</p>
@@ -203,9 +188,7 @@ const Insights = () => {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[11px] text-muted-foreground">
-                Tip: try not to test multiple suspect foods on the same day.
-              </p>
+              <p className="mt-3 text-[11px] text-muted-foreground">{t("insights.corr.tip")}</p>
             </section>
           )}
 
@@ -217,20 +200,16 @@ const Insights = () => {
               <div className="min-w-0 flex-1">
                 <h3 className="flex items-center gap-1.5 font-medium">
                   <AlertTriangle className="h-4 w-4 text-warning" />
-                  Ingredients that seem to trigger symptoms
+                  {t("insights.triggers.title")}
                 </h3>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Today's view — tap for full log (7d / 14d / 1m / all time)
-                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{t("insights.triggers.body")}</p>
               </div>
               <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             </div>
 
             <div className="mt-3">
               {todaysTriggers.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  No symptom triggers logged today. Tap to see your full history.
-                </p>
+                <p className="text-xs text-muted-foreground">{t("insights.triggers.empty")}</p>
               ) : (
                 <ul className="flex flex-wrap gap-1.5">
                   {todaysTriggers.map(([name, count]) => {
@@ -254,15 +233,11 @@ const Insights = () => {
               )}
             </div>
 
-            <p className="mt-3 text-[11px] font-medium text-primary">
-              View full trigger log →
-            </p>
+            <p className="mt-3 text-[11px] font-medium text-primary">{t("insights.triggers.cta")}</p>
           </Link>
 
-          <Card icon={<Heart className="h-4 w-4 text-success" />} title="Foods you seem to tolerate well">
-            <p className="mb-3 text-[11px] text-muted-foreground">
-              Whitelisted ingredients won't be flagged as triggers — even if their FODMAP score is high.
-            </p>
+          <Card icon={<Heart className="h-4 w-4 text-success" />} title={t("insights.tolerated.title")}>
+            <p className="mb-3 text-[11px] text-muted-foreground">{t("insights.tolerated.body")}</p>
 
             {tolerated.length > 0 && (
               <ul className="mb-3 flex flex-wrap gap-1.5">
@@ -286,20 +261,20 @@ const Insights = () => {
                 type="text"
                 value={newTolerated}
                 onChange={(e) => setNewTolerated(e.target.value)}
-                placeholder="Add an ingredient (e.g. garlic)"
+                placeholder={t("insights.tolerated.placeholder")}
                 className="flex-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs outline-none focus:border-primary"
               />
               <button
                 type="submit"
                 className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
               >
-                <Plus className="h-3 w-3" /> Add
+                <Plus className="h-3 w-3" /> {t("insights.tolerated.add")}
               </button>
             </form>
 
             {stats.topTolerated.length > 0 && (
               <div className="mt-4 border-t border-border pt-3">
-                <p className="mb-2 text-[11px] text-muted-foreground">Observed from your symptom-free meals:</p>
+                <p className="mb-2 text-[11px] text-muted-foreground">{t("insights.tolerated.observed")}</p>
                 <ul className="space-y-2">
                   {stats.topTolerated.map(([name, count]) => (
                     <Row key={name} name={name} count={count} max={stats.topTolerated[0][1]} tone="success" />
@@ -309,9 +284,9 @@ const Insights = () => {
             )}
           </Card>
 
-          <Card icon={<TrendingUp className="h-4 w-4 text-primary" />} title="Symptom frequency">
+          <Card icon={<TrendingUp className="h-4 w-4 text-primary" />} title={t("insights.symptoms.title")}>
             {stats.topSymptoms.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No symptoms logged yet — that&apos;s great!</p>
+              <p className="text-xs text-muted-foreground">{t("insights.symptoms.empty")}</p>
             ) : (
               <ul className="space-y-2">
                 {stats.topSymptoms.map(([name, count]) => (
@@ -328,16 +303,17 @@ const Insights = () => {
             <div className="flex items-center gap-2.5">
               <FileText className="h-4 w-4" />
               <div>
-                <p className="text-sm font-medium">Generate doctor / dietitian report</p>
-                <p className="text-[11px] opacity-80">Markdown summary you can download or share.</p>
+                <p className="text-sm font-medium">{t("insights.report.title")}</p>
+                <p className="text-[11px] opacity-80">{t("insights.report.body")}</p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 opacity-80" />
           </Link>
 
-          <p className="mt-6 text-center text-[11px] text-muted-foreground">
-            Insights are observational and not a clinical diagnosis. IBS is individual — patterns take time to identify.
-          </p>
+          {/* AI Analyzer at the bottom of the insights tab */}
+          <AnalyzerCard meals={meals} daily={dailyEntries} />
+
+          <p className="mt-6 text-center text-[11px] text-muted-foreground">{t("insights.foot")}</p>
         </>
       )}
     </AppShell>

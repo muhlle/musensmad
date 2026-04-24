@@ -6,12 +6,14 @@ import { FodmapBadge } from "@/components/FodmapBadge";
 import { SeverityChip } from "@/components/SeverityChip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
+import { useT } from "@/lib/i18n";
 import { Meal } from "@/lib/meal";
 import { Camera, Sparkles, AlertCircle, ChevronRight, Settings as SettingsIcon, CalendarHeart } from "lucide-react";
 import heroImg from "@/assets/hero-meal.jpg";
 
 const Index = () => {
   const { user, loading: authLoading } = useAnonAuth();
+  const { t } = useT();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,10 +38,10 @@ const Index = () => {
       {/* Header */}
       <header className="mb-6 flex items-start justify-between animate-fade-in">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">IBS Food Tracker</p>
-          <h1 className="mt-1 text-3xl font-semibold text-foreground">Hi there 👋</h1>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("index.kicker")}</p>
+          <h1 className="mt-1 text-3xl font-semibold text-foreground">{t("index.greeting")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tracking your meals helps you spot what your gut tolerates.
+            {t("index.subtitle")}
           </p>
         </div>
         <Link
@@ -55,17 +57,17 @@ const Index = () => {
       <section className="relative overflow-hidden rounded-3xl bg-gradient-hero p-5 text-primary-foreground shadow-elevated animate-fade-in-up">
         <div className="relative z-10 max-w-[60%]">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider backdrop-blur">
-            <Sparkles className="h-3 w-3" /> Smart insights
+            <Sparkles className="h-3 w-3" /> {t("index.hero.kicker")}
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight">
-            Snap a photo. Understand your meal.
+            {t("index.hero.title")}
           </h2>
           <p className="mt-1.5 text-xs text-primary-foreground/80">
-            Get an instant FODMAP estimate and possible IBS triggers.
+            {t("index.hero.body")}
           </p>
           <Button asChild variant="secondary" size="sm" className="mt-4 rounded-full font-semibold">
             <Link to="/add">
-              <Camera className="h-4 w-4" /> Add meal
+              <Camera className="h-4 w-4" /> {t("index.hero.cta")}
             </Link>
           </Button>
         </div>
@@ -81,11 +83,11 @@ const Index = () => {
       {/* Quick stats */}
       <section className="mt-5 grid grid-cols-2 gap-3 animate-fade-in-up">
         <div className="rounded-2xl bg-card p-4 shadow-soft">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Recent meals</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("index.stat.recent")}</p>
           <p className="mt-1 text-2xl font-semibold">{totalMeals}</p>
         </div>
         <div className="rounded-2xl bg-card p-4 shadow-soft">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Symptom-free</p>
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("index.stat.symptomFree")}</p>
           <p className="mt-1 text-2xl font-semibold text-success">{symptomFree}</p>
         </div>
       </section>
@@ -100,8 +102,8 @@ const Index = () => {
             <CalendarHeart className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-sm font-medium">Today's daily log</p>
-            <p className="text-[11px] text-muted-foreground">Stress, sleep, bowel movements — context matters.</p>
+            <p className="text-sm font-medium">{t("index.daily.title")}</p>
+            <p className="text-[11px] text-muted-foreground">{t("index.daily.body")}</p>
           </div>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -110,9 +112,9 @@ const Index = () => {
       {/* Recent meals */}
       <section className="mt-7">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold">Recent meals</h3>
+          <h3 className="font-display text-lg font-semibold">{t("index.recent")}</h3>
           <Link to="/history" className="text-xs font-medium text-primary inline-flex items-center gap-0.5">
-            View all <ChevronRight className="h-3.5 w-3.5" />
+            {t("index.viewAll")} <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
@@ -124,8 +126,8 @@ const Index = () => {
           </div>
         ) : meals.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-card/50 p-6 text-center">
-            <p className="text-sm font-medium">No meals yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">Add your first meal to start tracking.</p>
+            <p className="text-sm font-medium">{t("index.empty.title")}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t("index.empty.body")}</p>
           </div>
         ) : (
           <ul className="space-y-3">
@@ -160,8 +162,7 @@ const Index = () => {
       <section className="mt-7 flex items-start gap-2.5 rounded-2xl border border-border bg-card/60 p-3.5">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          This app does <span className="font-medium text-foreground">not</span> provide medical diagnosis.
-          Estimates from photos may be imperfect. Always consult a healthcare professional.
+          {t("index.disclaimer")}
         </p>
       </section>
     </AppShell>
