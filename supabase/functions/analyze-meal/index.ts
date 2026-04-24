@@ -2,6 +2,7 @@
 // Uses Lovable AI Gateway (Gemini multimodal) to analyze a meal photo + optional text
 // and return structured FODMAP / IBS information.
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 
 interface AnalyzeRequest {
   imageBase64?: string; // data URL or raw base64
@@ -9,6 +10,11 @@ interface AnalyzeRequest {
   description?: string;
   ingredientsHint?: string[];
 }
+
+const MAX_IMAGE_BYTES = 7 * 1024 * 1024; // ~7 MB base64 ≈ ~5 MB raw
+const MAX_DESCRIPTION_LEN = 2000;
+const MAX_INGREDIENTS = 50;
+const MAX_INGREDIENT_LEN = 100;
 
 const SYSTEM_PROMPT = `You are a careful nutrition assistant for people with IBS (Irritable Bowel Syndrome).
 You analyze a meal (from a photo and/or a short user description) and return a structured assessment focused on FODMAP content and possible IBS triggers.
@@ -91,17 +97,58 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // ---- AUTH: require a valid Supabase session (anonymous sessions are fine) ----
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claims, error: authError } = await supabaseClient.auth.getClaims(token);
+    if (authError || !claims?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const body = (await req.json()) as AnalyzeRequest;
-    const { imageBase64, imageUrl, description, ingredientsHint } = body;
+    let { imageBase64, imageUrl, description, ingredientsHint } = body;
 
     if (!imageBase64 && !imageUrl && !description) {
       return new Response(
         JSON.stringify({ error: "Provide an image or a description." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    // ---- INPUT VALIDATION: cap payload sizes to prevent cost/OOM abuse ----
+    if (imageBase64 && imageBase64.length > MAX_IMAGE_BYTES) {
+      return new Response(
+        JSON.stringify({ error: "Image too large (max ~5 MB)." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (typeof description === "string" && description.length > MAX_DESCRIPTION_LEN) {
+      description = description.slice(0, MAX_DESCRIPTION_LEN);
+    }
+    if (Array.isArray(ingredientsHint)) {
+      ingredientsHint = ingredientsHint
+        .filter((v) => typeof v === "string")
+        .slice(0, MAX_INGREDIENTS)
+        .map((v) => v.slice(0, MAX_INGREDIENT_LEN));
+    } else {
+      ingredientsHint = undefined;
     }
 
     const userParts: any[] = [];
