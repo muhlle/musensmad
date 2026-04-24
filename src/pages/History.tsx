@@ -9,6 +9,7 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
 import { Search, Pencil } from "lucide-react";
 import { format } from "date-fns";
+import { MealPhoto } from "@/components/MealPhoto";
 
 const History = () => {
   const { user } = useAnonAuth();
@@ -91,7 +92,7 @@ const History = () => {
                       className="flex gap-3 rounded-2xl bg-card p-3 shadow-soft transition-smooth hover:shadow-card"
                     >
                       {m.photo_url ? (
-                        <img src={m.photo_url} alt={m.title} loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+                        <MealPhoto value={m.photo_url} alt={m.title} loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
                       ) : (
                         <div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-secondary text-2xl">🍽️</div>
                       )}

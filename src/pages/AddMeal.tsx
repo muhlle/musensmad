@@ -50,7 +50,14 @@ const AddMeal = () => {
       reader.readAsDataURL(file);
     });
 
+  const MAX_PHOTO_BYTES = 5 * 1024 * 1024; // 5 MB
+
+  // Returns the storage path (not a public URL) — bucket is private; we sign URLs on read.
   const uploadPhoto = async (uid: string, file: File): Promise<string | null> => {
+    if (file.size > MAX_PHOTO_BYTES) {
+      toast.error("Photo too large (max 5 MB)");
+      return null;
+    }
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = `${uid}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("meal-photos").upload(path, file, {
@@ -62,8 +69,7 @@ const AddMeal = () => {
       toast.error("Couldn't upload photo");
       return null;
     }
-    const { data } = supabase.storage.from("meal-photos").getPublicUrl(path);
-    return data.publicUrl;
+    return path;
   };
 
   const analyze = async () => {

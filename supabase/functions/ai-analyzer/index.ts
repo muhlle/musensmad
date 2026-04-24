@@ -3,6 +3,7 @@
 // (exposure, dose, timing, symptom profile, bowel data, confounders,
 // reproducibility, data quality, FODMAP logic, red flags).
 // Uses Lovable AI Gateway with tool calling for structured output.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+const MAX_MEALS = 500;
+const MAX_DAILY = 365;
 
 interface MealInput {
   id: string;
@@ -180,9 +184,32 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ---- AUTH: require a valid Supabase session (anonymous sessions are fine) ----
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claims, error: authError } = await supabaseClient.auth.getClaims(token);
+    if (authError || !claims?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const body = (await req.json()) as RequestBody;
-    const meals = body.meals ?? [];
-    const daily = body.daily ?? [];
+    // ---- INPUT VALIDATION: cap array sizes to prevent cost abuse ----
+    const meals = Array.isArray(body.meals) ? body.meals.slice(-MAX_MEALS) : [];
+    const daily = Array.isArray(body.daily) ? body.daily.slice(-MAX_DAILY) : [];
     const lang = body.lang === "da" ? "da" : "en";
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
