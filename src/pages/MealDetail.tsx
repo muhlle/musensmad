@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Pencil, Trash2, AlertCircle, Sparkles, BookOpen, MessageCircle, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useTolerated } from "@/hooks/useTolerated";
+import { MealPhoto } from "@/components/MealPhoto";
 
 const MealDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -82,7 +83,7 @@ const MealDetail = () => {
       </div>
 
       {meal.photo_url && (
-        <img src={meal.photo_url} alt={meal.title} className="aspect-[4/3] w-full rounded-3xl object-cover shadow-card animate-fade-in-up" />
+        <MealPhoto value={meal.photo_url} alt={meal.title} className="aspect-[4/3] w-full rounded-3xl object-cover shadow-card animate-fade-in-up" />
       )}
 
       <div className="mt-4 animate-fade-in-up">

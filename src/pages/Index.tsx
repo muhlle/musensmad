@@ -10,6 +10,7 @@ import { useT } from "@/lib/i18n";
 import { Meal } from "@/lib/meal";
 import { Camera, Sparkles, AlertCircle, ChevronRight, Settings as SettingsIcon, CalendarHeart } from "lucide-react";
 import heroImg from "@/assets/hero-meal.jpg";
+import { MealPhoto } from "@/components/MealPhoto";
 
 const Index = () => {
   const { user, loading: authLoading } = useAnonAuth();
@@ -138,7 +139,7 @@ const Index = () => {
                   className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-soft transition-smooth hover:shadow-card"
                 >
                   {m.photo_url ? (
-                    <img src={m.photo_url} alt={m.title} loading="lazy" className="h-14 w-14 rounded-xl object-cover" />
+                    <MealPhoto value={m.photo_url} alt={m.title} loading="lazy" className="h-14 w-14 rounded-xl object-cover" />
                   ) : (
                     <div className="grid h-14 w-14 place-items-center rounded-xl bg-secondary text-secondary-foreground">
                       🍽️
