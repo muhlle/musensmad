@@ -54,9 +54,37 @@ const Settings = () => {
   return (
     <AppShell>
       <header className="mb-5 animate-fade-in">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Account</p>
-        <h1 className="mt-1 font-display text-2xl font-semibold">Settings</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("settings.kicker")}</p>
+        <h1 className="mt-1 font-display text-2xl font-semibold">{t("settings.title")}</h1>
       </header>
+
+      <section className="mb-4 rounded-2xl bg-card p-4 shadow-soft">
+        <h3 className="flex items-center gap-1.5 text-sm font-medium">
+          <Languages className="h-4 w-4 text-primary" /> {t("settings.lang.title")}
+        </h3>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setLang("en")}
+            className={`rounded-xl border px-3 py-2 text-sm font-medium transition-smooth ${
+              lang === "en"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-foreground hover:border-primary/50"
+            }`}
+          >
+            {t("settings.lang.en")}
+          </button>
+          <button
+            onClick={() => setLang("da")}
+            className={`rounded-xl border px-3 py-2 text-sm font-medium transition-smooth ${
+              lang === "da"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-foreground hover:border-primary/50"
+            }`}
+          >
+            {t("settings.lang.da")}
+          </button>
+        </div>
+      </section>
 
       <section className="rounded-2xl bg-card p-4 shadow-soft">
         <p className="text-xs text-muted-foreground">
