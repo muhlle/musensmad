@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
 import { useT } from "@/lib/i18n";
-import { Search, Pencil } from "lucide-react";
+import { Search, Pencil, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { da as daLocale, enUS } from "date-fns/locale";
 import { MealPhoto } from "@/components/MealPhoto";
@@ -95,36 +95,48 @@ const History = () => {
               <ul className="space-y-3">
                 {items.map((meal) => (
                   <li key={meal.id}>
-                    <Link
-                      to={`/meal/${meal.id}`}
-                      className="flex gap-3 rounded-2xl bg-card p-3 shadow-soft transition-smooth hover:shadow-card"
-                    >
-                      {meal.photo_url ? (
-                        <MealPhoto value={meal.photo_url} alt={meal.title} loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
-                      ) : (
-                        <div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-secondary text-2xl">🍽️</div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="truncate font-medium">{meal.title}</p>
-                          <span className="shrink-0 text-[11px] text-muted-foreground">
-                            {format(new Date(meal.meal_at), lang === "da" ? "HH:mm" : "h:mm a", { locale })}
-                          </span>
-                        </div>
-                        {meal.ai_summary && (
-                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{meal.ai_summary}</p>
+                    <div className="rounded-2xl bg-card p-3 shadow-soft transition-smooth hover:shadow-card">
+                      <Link to={`/meal/${meal.id}`} className="flex gap-3">
+                        {meal.photo_url ? (
+                          <MealPhoto value={meal.photo_url} alt={meal.title} loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+                        ) : (
+                          <div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-secondary text-2xl">🍽️</div>
                         )}
-                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                          <FodmapBadge level={meal.fodmap_level} score={meal.fodmap_score} />
-                          <SeverityChip severity={meal.symptom_severity} />
-                          {meal.edited_at && (
-                            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                              <Pencil className="h-2.5 w-2.5" /> {t("history.edited")}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="truncate font-medium">{meal.title}</p>
+                            <span className="shrink-0 text-[11px] text-muted-foreground">
+                              {format(new Date(meal.meal_at), lang === "da" ? "HH:mm" : "h:mm a", { locale })}
                             </span>
+                          </div>
+                          {meal.ai_summary && (
+                            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{meal.ai_summary}</p>
                           )}
                         </div>
+                      </Link>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-0 md:pl-[5.75rem]">
+                        <FodmapBadge level={meal.fodmap_level} score={meal.fodmap_score} />
+                        <Link
+                          to={`/meal/${meal.id}/symptoms`}
+                          className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          aria-label={`${t("meal.symptoms.update")} ${meal.title}`}
+                        >
+                          <SeverityChip severity={meal.symptom_severity} />
+                        </Link>
+                        <Link
+                          to={`/meal/${meal.id}/symptoms`}
+                          className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground transition-smooth hover:bg-secondary/80"
+                        >
+                          {meal.symptom_severity === "none" && meal.symptom_types.length === 0 ? t("meal.symptoms.add") : t("meal.symptoms.update")}
+                          <ChevronRight className="h-3 w-3" />
+                        </Link>
+                        {meal.edited_at && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <Pencil className="h-2.5 w-2.5" /> {t("history.edited")}
+                          </span>
+                        )}
                       </div>
-                    </Link>
+                    </div>
                   </li>
                 ))}
               </ul>
