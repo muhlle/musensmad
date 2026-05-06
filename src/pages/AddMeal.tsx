@@ -58,7 +58,7 @@ const AddMeal = () => {
   // Returns the storage path (not a public URL) — bucket is private; we sign URLs on read.
   const uploadPhoto = async (uid: string, file: File): Promise<string | null> => {
     if (file.size > MAX_PHOTO_BYTES) {
-      toast.error("Photo too large (max 5 MB)");
+      toast.error(t("add.photo.tooLarge"));
       return null;
     }
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -69,7 +69,7 @@ const AddMeal = () => {
     });
     if (error) {
       console.error(error);
-      toast.error("Couldn't upload photo");
+      toast.error(t("add.photo.uploadError"));
       return null;
     }
     return path;
