@@ -212,7 +212,7 @@ const MealDetail = () => {
           <ul className="mt-3 flex flex-wrap gap-1.5">
             {meal.symptom_types.map((symptom, i) => (
               <li key={`${symptom}-${i}`} className="rounded-full bg-secondary px-2.5 py-1 text-xs capitalize">
-                {symptom}
+                {t(`symptom.${symptom}`)}
               </li>
             ))}
           </ul>
