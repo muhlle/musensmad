@@ -32,6 +32,8 @@ interface Occurrence {
 const TriggersLog = () => {
   const { user } = useAnonAuth();
   const navigate = useNavigate();
+  const { t, lang } = useT();
+  const locale = lang === "da" ? daLocale : enUS;
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<Range>("7d");
