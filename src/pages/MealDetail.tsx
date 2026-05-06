@@ -126,7 +126,7 @@ const MealDetail = () => {
       )}
 
       {meal.ai_summary && (
-        <Section icon={<Sparkles className="h-4 w-4" />} title={t("meal.summary.title")} subtitle={meal.ai_confidence ? `${meal.ai_confidence} ${t("meal.confidence")}` : undefined}>
+        <Section icon={<Sparkles className="h-4 w-4" />} title={t("meal.summary.title")} subtitle={meal.ai_confidence ? `${t(`confidence.${meal.ai_confidence}`)} ${t("meal.confidence")}` : undefined}>
           <p className="text-sm">{meal.ai_summary}</p>
         </Section>
       )}
@@ -212,7 +212,7 @@ const MealDetail = () => {
           <ul className="mt-3 flex flex-wrap gap-1.5">
             {meal.symptom_types.map((symptom, i) => (
               <li key={`${symptom}-${i}`} className="rounded-full bg-secondary px-2.5 py-1 text-xs capitalize">
-                {symptom}
+                {t(`symptom.${symptom}`)}
               </li>
             ))}
           </ul>

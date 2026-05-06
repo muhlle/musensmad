@@ -7,6 +7,7 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useDailyLog } from "@/hooks/useDailyLog";
 import { useTolerated } from "@/hooks/useTolerated";
 import { Meal } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
 import { analyseTriggers } from "@/lib/triggerAnalysis";
 import { buildDoctorReport, downloadText } from "@/lib/report";
 import { ArrowLeft, Download, FileText, Copy, Check } from "lucide-react";
@@ -16,6 +17,7 @@ import { format } from "date-fns";
 const Report = () => {
   const { user } = useAnonAuth();
   const navigate = useNavigate();
+  const { t } = useT();
   const { entries } = useDailyLog(user?.id);
   const { tolerated } = useTolerated();
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -44,17 +46,17 @@ const Report = () => {
 
   const download = () => {
     downloadText(`ibs-summary-${format(new Date(), "yyyy-MM-dd")}.md`, report);
-    toast.success("Report downloaded");
+    toast.success(t("report.downloaded"));
   };
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(report);
       setCopied(true);
-      toast.success("Copied to clipboard");
+      toast.success(t("report.copiedToast"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Couldn't copy");
+      toast.error(t("report.copyError"));
     }
   };
 
@@ -64,34 +66,34 @@ const Report = () => {
         <button
           onClick={() => navigate(-1)}
           className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft"
-          aria-label="Back"
+          aria-label={t("common.back")}
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Summary</p>
-          <h1 className="font-display text-xl font-semibold">Report for doctor / dietitian</h1>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("report.kicker")}</p>
+          <h1 className="font-display text-xl font-semibold">{t("report.title")}</h1>
         </div>
       </div>
 
       <p className="mb-4 text-xs text-muted-foreground">
-        Share this overview with your healthcare provider. It includes meal trends, suspected triggers, bowel movements and lifestyle averages — all observational, not diagnostic.
+        {t("report.intro")}
       </p>
 
       <div className="mb-4 flex gap-2">
         <Button onClick={download} size="sm" className="flex-1 rounded-full">
-          <Download className="h-3.5 w-3.5" /> Download (.md)
+          <Download className="h-3.5 w-3.5" /> {t("report.download")}
         </Button>
         <Button onClick={copy} size="sm" variant="secondary" className="flex-1 rounded-full">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "Copied" : "Copy"}
+          {copied ? t("report.copied") : t("report.copy")}
         </Button>
       </div>
 
       <section className="rounded-2xl bg-card p-4 shadow-soft">
         <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
           <FileText className="h-4 w-4 text-primary" />
-          Preview
+          {t("report.preview")}
         </div>
         {loading ? (
           <div className="h-40 animate-pulse-soft rounded-xl bg-muted/60" />
@@ -103,7 +105,7 @@ const Report = () => {
       </section>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Report is generated locally — no data leaves your device unless you share it.
+        {t("report.foot")}
       </p>
     </AppShell>
   );

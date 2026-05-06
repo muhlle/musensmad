@@ -11,12 +11,12 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { toast } from "sonner";
 import { AIAnalysis } from "@/lib/meal";
 import { useT } from "@/lib/i18n";
-import { normalizeIngredientList } from "@/lib/ingredients";
+import { normalizeIngredientList, displayIngredient } from "@/lib/ingredients";
 
 const AddMeal = () => {
   const navigate = useNavigate();
   const { user } = useAnonAuth();
-  const { lang } = useT();
+  const { t, lang } = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -40,7 +40,7 @@ const AddMeal = () => {
   const addIngredient = () => {
     const v = newIng.trim();
     if (!v) return;
-    if (v.length > 60) return toast.error("Ingredient too long");
+    if (v.length > 60) return toast.error(t("add.ing.tooLong"));
     setIngredients((prev) => normalizeIngredientList([...prev, v]));
     setNewIng("");
   };
@@ -58,7 +58,7 @@ const AddMeal = () => {
   // Returns the storage path (not a public URL) — bucket is private; we sign URLs on read.
   const uploadPhoto = async (uid: string, file: File): Promise<string | null> => {
     if (file.size > MAX_PHOTO_BYTES) {
-      toast.error("Photo too large (max 5 MB)");
+      toast.error(t("add.photo.tooLarge"));
       return null;
     }
     const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -69,7 +69,7 @@ const AddMeal = () => {
     });
     if (error) {
       console.error(error);
-      toast.error("Couldn't upload photo");
+      toast.error(t("add.photo.uploadError"));
       return null;
     }
     return path;
@@ -77,11 +77,11 @@ const AddMeal = () => {
 
   const analyze = async () => {
     if (!photoFile && !description.trim()) {
-      toast.error("Add a photo or a description first");
+      toast.error(t("add.needInput"));
       return;
     }
     if (!user) {
-      toast.error("Setting up your session — try again in a moment");
+      toast.error(t("add.sessionLoading"));
       return;
     }
     setAnalyzing(true);
@@ -105,7 +105,7 @@ const AddMeal = () => {
 
       if (error) {
         console.error(error);
-        toast.error(error.message || "Analysis failed");
+        toast.error(error.message || t("add.analysisFailed"));
         setAnalyzing(false);
         return;
       }
@@ -136,7 +136,7 @@ const AddMeal = () => {
 
       if (insertErr || !inserted) {
         console.error(insertErr);
-        toast.error("Couldn't save meal");
+        toast.error(t("add.saveError"));
         setAnalyzing(false);
         return;
       }
@@ -146,7 +146,7 @@ const AddMeal = () => {
       });
     } catch (e) {
       console.error(e);
-      toast.error("Something went wrong");
+      toast.error(t("add.analysisFailed"));
       setAnalyzing(false);
     }
   };
@@ -154,15 +154,15 @@ const AddMeal = () => {
   return (
     <AppShell>
       <header className="mb-5 animate-fade-in">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">New entry</p>
-        <h1 className="mt-1 font-display text-2xl font-semibold">Add a meal</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("add.kicker")}</p>
+        <h1 className="mt-1 font-display text-2xl font-semibold">{t("add.title")}</h1>
       </header>
 
       {/* Photo */}
       <div className="animate-fade-in-up">
         {photoPreview ? (
           <div className="relative overflow-hidden rounded-3xl shadow-card">
-            <img src={photoPreview} alt="meal preview" className="aspect-[4/3] w-full object-cover" />
+            <img src={photoPreview} alt={t("add.photo.alt")} className="aspect-[4/3] w-full object-cover" />
             <button
               type="button"
               onClick={() => {
@@ -170,7 +170,7 @@ const AddMeal = () => {
                 setPhotoPreview(null);
               }}
               className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-background/80 text-foreground shadow-soft backdrop-blur"
-              aria-label="Remove photo"
+              aria-label={t("add.photo.remove")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -184,8 +184,8 @@ const AddMeal = () => {
             <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary transition-smooth group-hover:scale-110">
               <Camera className="h-6 w-6" />
             </span>
-            <span className="font-medium">Take or upload a photo</span>
-            <span className="text-xs text-muted-foreground">Optional, but improves accuracy</span>
+            <span className="font-medium">{t("add.photo.cta")}</span>
+            <span className="text-xs text-muted-foreground">{t("add.photo.hint")}</span>
           </button>
         )}
         <input
@@ -201,13 +201,13 @@ const AddMeal = () => {
       {/* Description */}
       <div className="mt-5 space-y-2">
         <Label htmlFor="desc" className="text-sm font-medium">
-          Description <span className="font-normal text-muted-foreground">(optional)</span>
+          {t("add.desc.label")} <span className="font-normal text-muted-foreground">{t("add.desc.optional")}</span>
         </Label>
         <Textarea
           id="desc"
           value={description}
           onChange={(e) => setDescription(e.target.value.slice(0, 600))}
-          placeholder="E.g. lentil curry with rice and yogurt"
+          placeholder={t("add.desc.placeholder")}
           className="min-h-[80px] resize-none rounded-2xl bg-card"
         />
       </div>
@@ -215,7 +215,7 @@ const AddMeal = () => {
       {/* Ingredients */}
       <div className="mt-5">
         <Label className="text-sm font-medium">
-          Ingredients <span className="font-normal text-muted-foreground">(optional, improves accuracy)</span>
+          {t("add.ing.label")} <span className="font-normal text-muted-foreground">{t("add.ing.optional")}</span>
         </Label>
         <div className="mt-2 flex gap-2">
           <Input
@@ -227,7 +227,7 @@ const AddMeal = () => {
                 addIngredient();
               }
             }}
-            placeholder="Add ingredient"
+            placeholder={t("add.ing.placeholder")}
             className="rounded-xl bg-card"
           />
           <Button type="button" variant="secondary" size="icon" onClick={addIngredient} className="rounded-xl">
@@ -236,19 +236,22 @@ const AddMeal = () => {
         </div>
         {ingredients.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-2">
-            {ingredients.map((ing, i) => (
-              <li key={i} className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs">
-                {ing}
-                <button
-                  type="button"
-                  onClick={() => setIngredients((prev) => prev.filter((_, idx) => idx !== i))}
-                  className="text-muted-foreground hover:text-foreground"
-                  aria-label={`Remove ${ing}`}
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </li>
-            ))}
+            {ingredients.map((ing, i) => {
+              const display = displayIngredient(ing, lang);
+              return (
+                <li key={i} className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs">
+                  {display}
+                  <button
+                    type="button"
+                    onClick={() => setIngredients((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="text-muted-foreground hover:text-foreground"
+                    aria-label={t("add.ing.remove", { item: display })}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -261,17 +264,17 @@ const AddMeal = () => {
       >
         {analyzing ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" /> Analyzing meal…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t("add.cta.analyzing")}
           </>
         ) : (
           <>
-            <Sparkles className="h-4 w-4" /> Analyze meal
+            <Sparkles className="h-4 w-4" /> {t("add.cta.analyze")}
           </>
         )}
       </Button>
 
       <p className="mt-3 text-center text-[11px] text-muted-foreground">
-        Estimates may be imperfect. Not medical advice.
+        {t("add.disclaimer")}
       </p>
     </AppShell>
   );

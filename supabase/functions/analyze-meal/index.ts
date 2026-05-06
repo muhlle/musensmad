@@ -9,6 +9,7 @@ interface AnalyzeRequest {
   imageUrl?: string;
   description?: string;
   ingredientsHint?: string[];
+  language?: "en" | "da";
 }
 
 const MAX_IMAGE_BYTES = 7 * 1024 * 1024; // ~7 MB base64 ≈ ~5 MB raw
@@ -16,7 +17,12 @@ const MAX_DESCRIPTION_LEN = 2000;
 const MAX_INGREDIENTS = 50;
 const MAX_INGREDIENT_LEN = 100;
 
-const SYSTEM_PROMPT = `You are a careful nutrition assistant for people with IBS (Irritable Bowel Syndrome).
+const buildSystemPrompt = (language: "en" | "da") => {
+  const langInstruction =
+    language === "da"
+      ? `\n\nLANGUAGE: Return ALL user-facing text fields (meal_title, ai_summary, ingredients, possible_triggers, evidence_notes, anecdotal_notes, clarifying_question) in DANISH. Use natural Danish phrasing. Keep enum values (fodmap_level, ai_confidence) in English.`
+      : `\n\nLANGUAGE: Return ALL user-facing text fields in English.`;
+  return `You are a careful nutrition assistant for people with IBS (Irritable Bowel Syndrome).
 You analyze a meal (from a photo and/or a short user description) and return a structured assessment focused on FODMAP content and possible IBS triggers.
 
 Critical rules:
@@ -26,7 +32,8 @@ Critical rules:
 - Separate symptom information into "evidence_notes" (well-documented, peer-reviewed associations between FODMAPs/ingredients and IBS symptoms) vs "anecdotal_notes" (commonly reported by IBS users online but not clearly proven).
 - Possible symptoms to consider: bloating, abdominal pain, gas, diarrhea, constipation, urgency.
 - Use cautious, hedging language ("may", "can sometimes", "is often reported to").
-- Keep summary under 300 characters. Keep notes under 500 characters each.`;
+- Keep summary under 300 characters. Keep notes under 500 characters each.${langInstruction}`;
+};
 
 const TOOL_SCHEMA = {
   type: "function",
@@ -123,7 +130,8 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const body = (await req.json()) as AnalyzeRequest;
-    let { imageBase64, imageUrl, description, ingredientsHint } = body;
+    let { imageBase64, imageUrl, description, ingredientsHint, language } = body;
+    const lang: "en" | "da" = language === "da" ? "da" : "en";
 
     if (!imageBase64 && !imageUrl && !description) {
       return new Response(
@@ -177,7 +185,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: buildSystemPrompt(lang) },
           { role: "user", content: userParts },
         ],
         tools: [TOOL_SCHEMA],
