@@ -40,7 +40,7 @@ const AddMeal = () => {
   const addIngredient = () => {
     const v = newIng.trim();
     if (!v) return;
-    if (v.length > 60) return toast.error("Ingredient too long");
+    if (v.length > 60) return toast.error(t("add.ing.tooLong"));
     setIngredients((prev) => normalizeIngredientList([...prev, v]));
     setNewIng("");
   };
