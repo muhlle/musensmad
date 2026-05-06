@@ -109,13 +109,13 @@ const TriggersLog = () => {
         <button
           onClick={() => navigate(-1)}
           className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft"
-          aria-label="Back"
+          aria-label={t("common.back")}
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trigger log</p>
-          <h1 className="font-display text-xl font-semibold">Ingredients you've reacted to</h1>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("triggers.kicker")}</p>
+          <h1 className="font-display text-xl font-semibold">{t("triggers.title")}</h1>
         </div>
       </div>
 
@@ -130,13 +130,13 @@ const TriggersLog = () => {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {r.label.replace("Last ", "")}
+            {t(`triggers.range.${r.value}`)}
           </button>
         ))}
       </div>
 
       <p className="mb-3 text-xs text-muted-foreground">
-        Tagged from meals where you logged symptoms. FODMAP scores are general — your reactions are personal.
+        {t("triggers.intro")}
       </p>
 
       {loading ? (
@@ -146,17 +146,16 @@ const TriggersLog = () => {
       ) : combined.length === 0 ? (
         <div className="mt-12 rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
           <AlertTriangle className="mx-auto h-6 w-6 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium">No triggers in this period</p>
+          <p className="mt-3 text-sm font-medium">{t("triggers.empty.title")}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {range === "all"
-              ? "Log meals with symptoms to start building your trigger profile."
-              : "Try a longer period — or great news, no reactions here!"}
+            {range === "all" ? t("triggers.empty.allBody") : t("triggers.empty.body")}
           </p>
         </div>
       ) : (
         <ul className="space-y-2.5">
           {combined.map((entry) => {
             const tol = isTolerated(entry.name);
+            const display = displayIngredient(entry.name, lang);
             return (
               <li
                 key={entry.name}
@@ -165,36 +164,36 @@ const TriggersLog = () => {
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium capitalize">{entry.name}</span>
+                      <span className="truncate text-sm font-medium capitalize">{display}</span>
                       {tol && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-1.5 py-0.5 text-[10px] text-success">
-                          <Check className="h-2.5 w-2.5" /> tolerated
+                          <Check className="h-2.5 w-2.5" /> {t("triggers.tolerated")}
                         </span>
                       )}
                     </div>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      Reacted {entry.count} time{entry.count === 1 ? "" : "s"}
+                      {entry.count === 1 ? t("triggers.reacted.one") : t("triggers.reacted.many", { count: entry.count })}
                     </p>
                   </div>
                   {tol ? (
                     <button
                       onClick={() => {
                         removeTolerated(entry.name);
-                        toast.success(`Removed "${entry.name}" from tolerated list`);
+                        toast.success(t("triggers.untoleratedToast", { item: display }));
                       }}
                       className="shrink-0 rounded-full border border-border px-2.5 py-1 text-[11px] hover:bg-muted"
                     >
-                      Unmark
+                      {t("triggers.unmark")}
                     </button>
                   ) : (
                     <button
                       onClick={() => {
                         addTolerated(entry.name);
-                        toast.success(`"${entry.name}" marked as tolerated`);
+                        toast.success(t("triggers.toleratedToast", { item: display }));
                       }}
                       className="shrink-0 rounded-full bg-success-soft px-2.5 py-1 text-[11px] text-success hover:opacity-80"
                     >
-                      I tolerate it
+                      {t("triggers.tolerate")}
                     </button>
                   )}
                 </div>
@@ -210,7 +209,9 @@ const TriggersLog = () => {
                   <details className="group mt-2.5">
                     <summary className="flex cursor-pointer items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
                       <Calendar className="h-3 w-3" />
-                      View {entry.occurrences.length} meal{entry.occurrences.length === 1 ? "" : "s"}
+                      {entry.occurrences.length === 1
+                        ? t("triggers.viewMeals.one")
+                        : t("triggers.viewMeals.many", { count: entry.occurrences.length })}
                     </summary>
                     <ul className="mt-2 space-y-1 border-l border-border pl-3">
                       {entry.occurrences.slice(0, 10).map((o, i) => (
@@ -220,7 +221,7 @@ const TriggersLog = () => {
                             className="flex items-center justify-between text-[11px] text-muted-foreground hover:text-foreground"
                           >
                             <span className="truncate">{o.mealTitle}</span>
-                            <span className="shrink-0 pl-2">{format(new Date(o.at), "MMM d")}</span>
+                            <span className="shrink-0 pl-2">{format(new Date(o.at), lang === "da" ? "d. MMM" : "MMM d", { locale })}</span>
                           </Link>
                         </li>
                       ))}
@@ -234,7 +235,7 @@ const TriggersLog = () => {
       )}
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Observational tracking only — not a clinical diagnosis.
+        {t("triggers.foot")}
       </p>
     </AppShell>
   );
