@@ -11,7 +11,7 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { toast } from "sonner";
 import { AIAnalysis } from "@/lib/meal";
 import { useT } from "@/lib/i18n";
-import { normalizeIngredientList } from "@/lib/ingredients";
+import { normalizeIngredientList, displayIngredient } from "@/lib/ingredients";
 
 const AddMeal = () => {
   const navigate = useNavigate();
