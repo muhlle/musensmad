@@ -77,11 +77,11 @@ const AddMeal = () => {
 
   const analyze = async () => {
     if (!photoFile && !description.trim()) {
-      toast.error("Add a photo or a description first");
+      toast.error(t("add.needInput"));
       return;
     }
     if (!user) {
-      toast.error("Setting up your session — try again in a moment");
+      toast.error(t("add.sessionLoading"));
       return;
     }
     setAnalyzing(true);
@@ -105,7 +105,7 @@ const AddMeal = () => {
 
       if (error) {
         console.error(error);
-        toast.error(error.message || "Analysis failed");
+        toast.error(error.message || t("add.analysisFailed"));
         setAnalyzing(false);
         return;
       }
@@ -136,7 +136,7 @@ const AddMeal = () => {
 
       if (insertErr || !inserted) {
         console.error(insertErr);
-        toast.error("Couldn't save meal");
+        toast.error(t("add.saveError"));
         setAnalyzing(false);
         return;
       }
@@ -146,7 +146,7 @@ const AddMeal = () => {
       });
     } catch (e) {
       console.error(e);
-      toast.error("Something went wrong");
+      toast.error(t("add.analysisFailed"));
       setAnalyzing(false);
     }
   };
