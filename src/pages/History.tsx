@@ -7,12 +7,17 @@ import { SeverityChip } from "@/components/SeverityChip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
 import { Search, Pencil } from "lucide-react";
 import { format } from "date-fns";
+import { da as daLocale, enUS } from "date-fns/locale";
 import { MealPhoto } from "@/components/MealPhoto";
 
 const History = () => {
   const { user } = useAnonAuth();
+  const { t, lang } = useT();
+  const locale = lang === "da" ? daLocale : enUS;
+
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -31,39 +36,42 @@ const History = () => {
 
   const filtered = useMemo(() => {
     if (!q.trim()) return meals;
-    const t = q.toLowerCase();
+    const query = q.toLowerCase();
     return meals.filter(
-      (m) =>
-        m.title.toLowerCase().includes(t) ||
-        (m.ai_summary ?? "").toLowerCase().includes(t) ||
-        m.ingredients.some((i) => i.toLowerCase().includes(t)),
+      (meal) =>
+        meal.title.toLowerCase().includes(query) ||
+        (meal.ai_summary ?? "").toLowerCase().includes(query) ||
+        meal.ingredients.some((ingredient) => ingredient.toLowerCase().includes(query)),
     );
   }, [q, meals]);
 
-  // Group by day
   const grouped = useMemo(() => {
-    const g: Record<string, Meal[]> = {};
-    for (const m of filtered) {
-      const day = format(new Date(m.meal_at), "EEEE, MMM d");
-      g[day] = g[day] || [];
-      g[day].push(m);
+    const groups: Record<string, Meal[]> = {};
+    for (const meal of filtered) {
+      const day = format(
+        new Date(meal.meal_at),
+        lang === "da" ? "EEEE d. MMM" : "EEEE, MMM d",
+        { locale },
+      );
+      groups[day] = groups[day] || [];
+      groups[day].push(meal);
     }
-    return g;
-  }, [filtered]);
+    return groups;
+  }, [filtered, lang, locale]);
 
   return (
     <AppShell>
       <header className="mb-5 animate-fade-in">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Your log</p>
-        <h1 className="mt-1 font-display text-2xl font-semibold">Meal history</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("history.kicker")}</p>
+        <h1 className="mt-1 font-display text-2xl font-semibold">{t("history.title")}</h1>
       </header>
 
       <div className="relative mb-5">
         <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search meals or ingredients"
+          onChange={(event) => setQ(event.target.value)}
+          placeholder={t("history.search.placeholder")}
           className="rounded-full bg-card pl-10"
         />
       </div>
@@ -76,8 +84,8 @@ const History = () => {
         </div>
       ) : filtered.length === 0 ? (
         <div className="mt-12 text-center">
-          <p className="text-sm font-medium">No meals match</p>
-          <p className="mt-1 text-xs text-muted-foreground">Try a different search or add a new meal.</p>
+          <p className="text-sm font-medium">{t("history.empty.title")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("history.empty.body")}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -85,33 +93,33 @@ const History = () => {
             <section key={day}>
               <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">{day}</h3>
               <ul className="space-y-3">
-                {items.map((m) => (
-                  <li key={m.id}>
+                {items.map((meal) => (
+                  <li key={meal.id}>
                     <Link
-                      to={`/meal/${m.id}`}
+                      to={`/meal/${meal.id}`}
                       className="flex gap-3 rounded-2xl bg-card p-3 shadow-soft transition-smooth hover:shadow-card"
                     >
-                      {m.photo_url ? (
-                        <MealPhoto value={m.photo_url} alt={m.title} loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+                      {meal.photo_url ? (
+                        <MealPhoto value={meal.photo_url} alt={meal.title} loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
                       ) : (
                         <div className="grid h-20 w-20 shrink-0 place-items-center rounded-xl bg-secondary text-2xl">🍽️</div>
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="truncate font-medium">{m.title}</p>
+                          <p className="truncate font-medium">{meal.title}</p>
                           <span className="shrink-0 text-[11px] text-muted-foreground">
-                            {format(new Date(m.meal_at), "h:mm a")}
+                            {format(new Date(meal.meal_at), lang === "da" ? "HH:mm" : "h:mm a", { locale })}
                           </span>
                         </div>
-                        {m.ai_summary && (
-                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{m.ai_summary}</p>
+                        {meal.ai_summary && (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{meal.ai_summary}</p>
                         )}
                         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                          <FodmapBadge level={m.fodmap_level} score={m.fodmap_score} />
-                          <SeverityChip severity={m.symptom_severity} />
-                          {m.edited_at && (
+                          <FodmapBadge level={meal.fodmap_level} score={meal.fodmap_score} />
+                          <SeverityChip severity={meal.symptom_severity} />
+                          {meal.edited_at && (
                             <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                              <Pencil className="h-2.5 w-2.5" /> edited
+                              <Pencil className="h-2.5 w-2.5" /> {t("history.edited")}
                             </span>
                           )}
                         </div>

@@ -33,6 +33,14 @@ const en: Dict = {
   "nav.daily": "Daily",
   "nav.insights": "Insights",
 
+  // History
+  "history.kicker": "Your log",
+  "history.title": "Meal history",
+  "history.search.placeholder": "Search meals or ingredients",
+  "history.empty.title": "No meals match",
+  "history.empty.body": "Try a different search or add a new meal.",
+  "history.edited": "edited",
+
   // Index
   "index.kicker": "IBS Food Tracker",
   "index.greeting": "Hi there 👋",
@@ -51,6 +59,35 @@ const en: Dict = {
   "index.empty.body": "Add your first meal to start tracking.",
   "index.disclaimer":
     "This app does not provide medical diagnosis. Estimates from photos may be imperfect. Always consult a healthcare professional.",
+
+  // Meal detail
+  "meal.notFound": "Meal not found",
+  "meal.delete.confirm": "Delete this meal entry? This cannot be undone.",
+  "meal.delete.error": "Couldn't delete",
+  "meal.delete.success": "Meal deleted",
+  "meal.back": "Back",
+  "meal.edit": "Edit",
+  "meal.edited": "edited",
+  "meal.allTriggersTolerated": "all triggers tolerated",
+  "meal.moreInfo.title": "More info needed",
+  "meal.moreInfo.body": "Add more details and re-analyze for a better estimate.",
+  "meal.summary.title": "Meal summary",
+  "meal.confidence": "confidence",
+  "meal.ingredients.title": "Likely ingredients",
+  "meal.triggers.title": "Possible IBS triggers in this meal",
+  "meal.tolerated.toast": "\"{item}\" marked as tolerated",
+  "meal.tolerated.button": "I tolerate it",
+  "meal.tolerated.title": "I tolerate this ingredient",
+  "meal.tolerated.note": "Mark anything you tolerate well — it won't be flagged as a trigger.",
+  "meal.evidence.title": "Documented · evidence-based",
+  "meal.anecdotal.title": "Anecdotal · commonly reported",
+  "meal.anecdotal.note": "Reported by IBS users; not clinically proven.",
+  "meal.symptoms.title": "Symptoms",
+  "meal.symptoms.body": "Log how you felt — even hours later.",
+  "meal.symptoms.add": "Add",
+  "meal.symptoms.update": "Update",
+  "meal.symptoms.started": "Started",
+  "meal.disclaimer": "Not a medical diagnosis. Always consult a healthcare professional.",
 
   // Insights
   "insights.kicker": "Patterns",
@@ -183,6 +220,14 @@ const da: Dict = {
   "nav.daily": "Daglig",
   "nav.insights": "Indsigt",
 
+  // History
+  "history.kicker": "Din log",
+  "history.title": "Måltidshistorik",
+  "history.search.placeholder": "Søg i måltider eller ingredienser",
+  "history.empty.title": "Ingen måltider matcher",
+  "history.empty.body": "Prøv en anden søgning eller tilføj et nyt måltid.",
+  "history.edited": "redigeret",
+
   // Index
   "index.kicker": "IBS Madtracker",
   "index.greeting": "Hej med dig 👋",
@@ -201,6 +246,35 @@ const da: Dict = {
   "index.empty.body": "Tilføj dit første måltid for at komme i gang.",
   "index.disclaimer":
     "Denne app stiller ikke medicinske diagnoser. Estimater ud fra billeder kan være upræcise. Konsultér altid en sundhedsprofessionel.",
+
+  // Meal detail
+  "meal.notFound": "Måltidet blev ikke fundet",
+  "meal.delete.confirm": "Slet dette måltid? Det kan ikke fortrydes.",
+  "meal.delete.error": "Kunne ikke slette",
+  "meal.delete.success": "Måltid slettet",
+  "meal.back": "Tilbage",
+  "meal.edit": "Redigér",
+  "meal.edited": "redigeret",
+  "meal.allTriggersTolerated": "alle triggere tåles",
+  "meal.moreInfo.title": "Mere info nødvendig",
+  "meal.moreInfo.body": "Tilføj flere detaljer og analysér igen for et bedre estimat.",
+  "meal.summary.title": "Måltidsresumé",
+  "meal.confidence": "sikkerhed",
+  "meal.ingredients.title": "Sandsynlige ingredienser",
+  "meal.triggers.title": "Mulige IBS-triggere i dette måltid",
+  "meal.tolerated.toast": "\"{item}\" markeret som tålt",
+  "meal.tolerated.button": "Jeg tåler det",
+  "meal.tolerated.title": "Jeg tåler denne ingrediens",
+  "meal.tolerated.note": "Markér det, du tåler godt — så bliver det ikke markeret som trigger.",
+  "meal.evidence.title": "Dokumenteret · evidensbaseret",
+  "meal.anecdotal.title": "Anekdotisk · ofte rapporteret",
+  "meal.anecdotal.note": "Rapporteret af IBS-brugere; ikke klinisk bevist.",
+  "meal.symptoms.title": "Symptomer",
+  "meal.symptoms.body": "Log hvordan du havde det — også flere timer senere.",
+  "meal.symptoms.add": "Tilføj",
+  "meal.symptoms.update": "Opdatér",
+  "meal.symptoms.started": "Startede",
+  "meal.disclaimer": "Ikke en medicinsk diagnose. Kontakt altid en sundhedsprofessionel.",
 
   // Insights
   "insights.kicker": "Mønstre",

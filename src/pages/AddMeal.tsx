@@ -10,10 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { toast } from "sonner";
 import { AIAnalysis } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
+import { normalizeIngredientList } from "@/lib/ingredients";
 
 const AddMeal = () => {
   const navigate = useNavigate();
   const { user } = useAnonAuth();
+  const { lang } = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -38,7 +41,7 @@ const AddMeal = () => {
     const v = newIng.trim();
     if (!v) return;
     if (v.length > 60) return toast.error("Ingredient too long");
-    setIngredients((prev) => [...prev, v]);
+    setIngredients((prev) => normalizeIngredientList([...prev, v]));
     setNewIng("");
   };
 
@@ -96,6 +99,7 @@ const AddMeal = () => {
           imageBase64,
           description: description.trim() || undefined,
           ingredientsHint: ingredients.length ? ingredients : undefined,
+          language: lang,
         },
       });
 
@@ -108,7 +112,9 @@ const AddMeal = () => {
       const analysis = (data as { analysis: AIAnalysis }).analysis;
 
       // Save meal
-      const finalIngredients = ingredients.length ? ingredients : analysis.ingredients;
+      const finalIngredients = normalizeIngredientList(ingredients.length ? ingredients : analysis.ingredients);
+      const finalTriggers = normalizeIngredientList(analysis.possible_triggers ?? []);
+
       const { data: inserted, error: insertErr } = await supabase
         .from("meals")
         .insert({
@@ -120,7 +126,7 @@ const AddMeal = () => {
           ai_summary: analysis.ai_summary,
           fodmap_level: analysis.fodmap_level,
           fodmap_score: analysis.fodmap_score,
-          possible_triggers: analysis.possible_triggers,
+          possible_triggers: finalTriggers,
           evidence_notes: analysis.evidence_notes,
           anecdotal_notes: analysis.anecdotal_notes,
           ai_confidence: analysis.ai_confidence,

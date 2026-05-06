@@ -7,7 +7,10 @@ import { SeverityChip } from "@/components/SeverityChip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { Meal } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
+import { displayIngredient } from "@/lib/ingredients";
 import { format } from "date-fns";
+import { da as daLocale, enUS } from "date-fns/locale";
 import { ArrowLeft, Pencil, Trash2, AlertCircle, Sparkles, BookOpen, MessageCircle, ChevronRight, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useTolerated } from "@/hooks/useTolerated";
@@ -20,6 +23,8 @@ const MealDetail = () => {
   const location = useLocation();
   const fresh = new URLSearchParams(location.search).get("fresh") === "1";
   const navState = (location.state as { needsMoreInfo?: boolean; clarifyingQuestion?: string } | null) ?? null;
+  const { t, lang } = useT();
+  const locale = lang === "da" ? daLocale : enUS;
 
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,21 +35,21 @@ const MealDetail = () => {
     (async () => {
       const { data, error } = await supabase.from("meals").select("*").eq("id", id).maybeSingle();
       if (error || !data) {
-        toast.error("Meal not found");
+        toast.error(t("meal.notFound"));
         navigate("/history");
         return;
       }
       setMeal(data as unknown as Meal);
       setLoading(false);
     })();
-  }, [id, user, navigate]);
+  }, [id, user, navigate, t]);
 
   const remove = async () => {
     if (!meal) return;
-    if (!confirm("Delete this meal entry? This cannot be undone.")) return;
+    if (!confirm(t("meal.delete.confirm"))) return;
     const { error } = await supabase.from("meals").delete().eq("id", meal.id);
-    if (error) return toast.error("Couldn't delete");
-    toast.success("Meal deleted");
+    if (error) return toast.error(t("meal.delete.error"));
+    toast.success(t("meal.delete.success"));
     navigate("/history");
   };
 
@@ -61,19 +66,19 @@ const MealDetail = () => {
 
   const triggersAllTolerated =
     meal.possible_triggers.length > 0 &&
-    meal.possible_triggers.every((t) => isTolerated(t));
+    meal.possible_triggers.every((trigger) => isTolerated(trigger));
   const effectiveLevel = triggersAllTolerated && meal.fodmap_level !== "low" ? "low" : meal.fodmap_level;
 
   return (
     <AppShell>
       <div className="mb-4 flex items-center justify-between animate-fade-in">
-        <button onClick={() => navigate(-1)} className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft" aria-label="Back">
+        <button onClick={() => navigate(-1)} className="grid h-9 w-9 place-items-center rounded-full bg-card shadow-soft" aria-label={t("meal.back")}>
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="flex gap-2">
           <Button asChild variant="secondary" size="sm" className="rounded-full">
             <Link to={`/meal/${meal.id}/edit`}>
-              <Pencil className="h-3.5 w-3.5" /> Edit
+              <Pencil className="h-3.5 w-3.5" /> {t("meal.edit")}
             </Link>
           </Button>
           <Button onClick={remove} variant="ghost" size="icon" className="rounded-full text-destructive hover:bg-destructive-soft">
@@ -87,7 +92,9 @@ const MealDetail = () => {
       )}
 
       <div className="mt-4 animate-fade-in-up">
-        <p className="text-xs text-muted-foreground">{format(new Date(meal.meal_at), "EEEE, MMM d · h:mm a")}</p>
+        <p className="text-xs text-muted-foreground">
+          {format(new Date(meal.meal_at), lang === "da" ? "EEEE d. MMM · HH:mm" : "EEEE, MMM d · h:mm a", { locale })}
+        </p>
         <h1 className="mt-1 font-display text-2xl font-semibold">{meal.title}</h1>
         {meal.description && <p className="mt-1 text-sm text-muted-foreground">{meal.description}</p>}
         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -95,12 +102,12 @@ const MealDetail = () => {
           <SeverityChip severity={meal.symptom_severity} />
           {triggersAllTolerated && (
             <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2 py-1 text-[10px] text-success">
-              <Check className="h-2.5 w-2.5" /> all triggers tolerated
+              <Check className="h-2.5 w-2.5" /> {t("meal.allTriggersTolerated")}
             </span>
           )}
           {meal.edited_at && (
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[10px] text-muted-foreground">
-              <Pencil className="h-2.5 w-2.5" /> edited {format(new Date(meal.edited_at), "MMM d")}
+              <Pencil className="h-2.5 w-2.5" /> {t("meal.edited")} {format(new Date(meal.edited_at), lang === "da" ? "d. MMM" : "MMM d", { locale })}
             </span>
           )}
         </div>
@@ -110,62 +117,59 @@ const MealDetail = () => {
         <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-warning/30 bg-warning-soft p-3.5 animate-fade-in">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
           <div>
-            <p className="text-xs font-medium text-warning">More info needed</p>
+            <p className="text-xs font-medium text-warning">{t("meal.moreInfo.title")}</p>
             <p className="mt-0.5 text-xs text-warning/90">
-              {navState.clarifyingQuestion || "Add more details and re-analyze for a better estimate."}
+              {navState.clarifyingQuestion || t("meal.moreInfo.body")}
             </p>
           </div>
         </div>
       )}
 
-      {/* Summary */}
       {meal.ai_summary && (
-        <Section icon={<Sparkles className="h-4 w-4" />} title="Meal summary" subtitle={meal.ai_confidence ? `${meal.ai_confidence} confidence` : undefined}>
+        <Section icon={<Sparkles className="h-4 w-4" />} title={t("meal.summary.title")} subtitle={meal.ai_confidence ? `${meal.ai_confidence} ${t("meal.confidence")}` : undefined}>
           <p className="text-sm">{meal.ai_summary}</p>
         </Section>
       )}
 
-      {/* Ingredients */}
       {meal.ingredients.length > 0 && (
-        <Section title="Likely ingredients">
+        <Section title={t("meal.ingredients.title")}>
           <ul className="flex flex-wrap gap-1.5">
-            {meal.ingredients.map((ing, i) => (
-              <li key={i} className="rounded-full bg-secondary px-2.5 py-1 text-xs">
-                {ing}
+            {meal.ingredients.map((ingredient, i) => (
+              <li key={`${ingredient}-${i}`} className="rounded-full bg-secondary px-2.5 py-1 text-xs">
+                {displayIngredient(ingredient, lang)}
               </li>
             ))}
           </ul>
         </Section>
       )}
 
-      {/* Triggers */}
       {meal.possible_triggers.length > 0 && (
-        <Section title="Possible IBS triggers in this meal">
+        <Section title={t("meal.triggers.title")}>
           <ul className="flex flex-wrap gap-1.5">
-            {meal.possible_triggers.map((t, i) => {
-              const tol = isTolerated(t);
+            {meal.possible_triggers.map((trigger, i) => {
+              const tolerated = isTolerated(trigger);
               return (
-                <li key={i} className="inline-flex items-center gap-1">
+                <li key={`${trigger}-${i}`} className="inline-flex items-center gap-1">
                   <span
                     className={
-                      tol
+                      tolerated
                         ? "rounded-full border border-success/30 bg-success-soft px-2.5 py-1 text-xs text-success line-through opacity-80"
                         : "rounded-full border border-warning/30 bg-warning-soft px-2.5 py-1 text-xs text-warning"
                     }
                   >
-                    {t}
-                    {tol && <Check className="ml-1 inline h-3 w-3" />}
+                    {displayIngredient(trigger, lang)}
+                    {tolerated && <Check className="ml-1 inline h-3 w-3" />}
                   </span>
-                  {!tol && (
+                  {!tolerated && (
                     <button
                       onClick={() => {
-                        addTolerated(t);
-                        toast.success(`"${t}" marked as tolerated`);
+                        addTolerated(trigger);
+                        toast.success(t("meal.tolerated.toast", { item: displayIngredient(trigger, lang) }));
                       }}
                       className="rounded-full bg-success-soft px-2 py-1 text-[10px] text-success hover:opacity-80"
-                      title="I tolerate this ingredient"
+                      title={t("meal.tolerated.title")}
                     >
-                      I tolerate it
+                      {t("meal.tolerated.button")}
                     </button>
                   )}
                 </li>
@@ -173,59 +177,56 @@ const MealDetail = () => {
             })}
           </ul>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Mark anything you tolerate well — it won't be flagged as a trigger.
+            {t("meal.tolerated.note")}
           </p>
         </Section>
       )}
 
-      {/* Evidence-based */}
       {meal.evidence_notes && (
-        <Section icon={<BookOpen className="h-4 w-4" />} title="Documented · evidence-based" tone="primary">
+        <Section icon={<BookOpen className="h-4 w-4" />} title={t("meal.evidence.title")} tone="primary">
           <p className="text-sm leading-relaxed">{meal.evidence_notes}</p>
         </Section>
       )}
 
-      {/* Anecdotal */}
       {meal.anecdotal_notes && (
-        <Section icon={<MessageCircle className="h-4 w-4" />} title="Anecdotal · commonly reported" tone="muted">
+        <Section icon={<MessageCircle className="h-4 w-4" />} title={t("meal.anecdotal.title")} tone="muted">
           <p className="text-sm leading-relaxed">{meal.anecdotal_notes}</p>
-          <p className="mt-2 text-[11px] text-muted-foreground">Reported by IBS users; not clinically proven.</p>
+          <p className="mt-2 text-[11px] text-muted-foreground">{t("meal.anecdotal.note")}</p>
         </Section>
       )}
 
-      {/* Symptom log */}
       <div className="mt-5 rounded-2xl bg-card p-4 shadow-soft">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium">Symptoms</h3>
-            <p className="text-xs text-muted-foreground">Log how you felt — even hours later.</p>
+            <h3 className="font-medium">{t("meal.symptoms.title")}</h3>
+            <p className="text-xs text-muted-foreground">{t("meal.symptoms.body")}</p>
           </div>
           <Button asChild variant="secondary" size="sm" className="rounded-full">
             <Link to={`/meal/${meal.id}/symptoms`}>
-              {meal.symptom_severity === "none" && meal.symptom_types.length === 0 ? "Add" : "Update"}
+              {meal.symptom_severity === "none" && meal.symptom_types.length === 0 ? t("meal.symptoms.add") : t("meal.symptoms.update")}
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>
         {meal.symptom_types.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-1.5">
-            {meal.symptom_types.map((s, i) => (
-              <li key={i} className="rounded-full bg-secondary px-2.5 py-1 text-xs capitalize">
-                {s}
+            {meal.symptom_types.map((symptom, i) => (
+              <li key={`${symptom}-${i}`} className="rounded-full bg-secondary px-2.5 py-1 text-xs capitalize">
+                {symptom}
               </li>
             ))}
           </ul>
         )}
         {meal.symptom_started_at && (
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Started {format(new Date(meal.symptom_started_at), "MMM d, h:mm a")}
+            {t("meal.symptoms.started")} {format(new Date(meal.symptom_started_at), lang === "da" ? "d. MMM, HH:mm" : "MMM d, h:mm a", { locale })}
           </p>
         )}
         {meal.user_notes && <p className="mt-2 text-sm">{meal.user_notes}</p>}
       </div>
 
       <p className="mt-6 text-center text-[11px] text-muted-foreground">
-        Not a medical diagnosis. Always consult a healthcare professional.
+        {t("meal.disclaimer")}
       </p>
     </AppShell>
   );
