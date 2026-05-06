@@ -16,7 +16,7 @@ import { normalizeIngredientList } from "@/lib/ingredients";
 const AddMeal = () => {
   const navigate = useNavigate();
   const { user } = useAnonAuth();
-  const { lang } = useT();
+  const { t, lang } = useT();
   const fileRef = useRef<HTMLInputElement>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
