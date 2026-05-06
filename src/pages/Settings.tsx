@@ -24,18 +24,18 @@ const Settings = () => {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      toast.error("Couldn't sign in with Google");
+      toast.error(t("settings.signInError"));
       return;
     }
     if (!result.redirected) {
-      toast.success("Signed in with Google");
+      toast.success(t("settings.signedInToast"));
     }
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) return toast.error("Couldn't sign out");
-    toast.success("Signed out");
+    if (error) return toast.error(t("settings.signOutError"));
+    toast.success(t("settings.signedOutToast"));
   };
 
   const replayOnboarding = () => {
@@ -45,10 +45,10 @@ const Settings = () => {
 
   const wipeData = async () => {
     if (!user) return;
-    if (!confirm("Delete ALL your meal data? This cannot be undone.")) return;
+    if (!confirm(t("settings.deleteConfirm"))) return;
     const { error } = await supabase.from("meals").delete().eq("user_id", user.id);
-    if (error) return toast.error("Couldn't delete data");
-    toast.success("All data deleted");
+    if (error) return toast.error(t("settings.deleteError"));
+    toast.success(t("settings.deleteSuccess"));
   };
 
   return (
