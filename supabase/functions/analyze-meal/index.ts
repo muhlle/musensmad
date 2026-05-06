@@ -130,7 +130,8 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const body = (await req.json()) as AnalyzeRequest;
-    let { imageBase64, imageUrl, description, ingredientsHint } = body;
+    let { imageBase64, imageUrl, description, ingredientsHint, language } = body;
+    const lang: "en" | "da" = language === "da" ? "da" : "en";
 
     if (!imageBase64 && !imageUrl && !description) {
       return new Response(
