@@ -7,6 +7,7 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useDailyLog } from "@/hooks/useDailyLog";
 import { useTolerated } from "@/hooks/useTolerated";
 import { Meal } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
 import { analyseTriggers } from "@/lib/triggerAnalysis";
 import { buildDoctorReport, downloadText } from "@/lib/report";
 import { ArrowLeft, Download, FileText, Copy, Check } from "lucide-react";
