@@ -17,6 +17,7 @@ import { format } from "date-fns";
 const Report = () => {
   const { user } = useAnonAuth();
   const navigate = useNavigate();
+  const { t } = useT();
   const { entries } = useDailyLog(user?.id);
   const { tolerated } = useTolerated();
   const [meals, setMeals] = useState<Meal[]>([]);
