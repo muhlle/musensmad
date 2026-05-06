@@ -6,17 +6,20 @@ import { useAnonAuth } from "@/hooks/useAnonAuth";
 import { useTolerated } from "@/hooks/useTolerated";
 import { useTriggerHistory } from "@/hooks/useTriggerHistory";
 import { Meal } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
+import { displayIngredient } from "@/lib/ingredients";
 import { ArrowLeft, AlertTriangle, Check, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { da as daLocale, enUS } from "date-fns/locale";
 
 type Range = "7d" | "14d" | "1m" | "all";
 
-const RANGES: { value: Range; label: string; days: number | null }[] = [
-  { value: "7d", label: "Last 7 days", days: 7 },
-  { value: "14d", label: "Last 14 days", days: 14 },
-  { value: "1m", label: "Last month", days: 30 },
-  { value: "all", label: "All time", days: null },
+const RANGES: { value: Range; days: number | null }[] = [
+  { value: "7d", days: 7 },
+  { value: "14d", days: 14 },
+  { value: "1m", days: 30 },
+  { value: "all", days: null },
 ];
 
 interface Occurrence {
