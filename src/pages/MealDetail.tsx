@@ -99,7 +99,13 @@ const MealDetail = () => {
         {meal.description && <p className="mt-1 text-sm text-muted-foreground">{meal.description}</p>}
         <div className="mt-3 flex flex-wrap gap-1.5">
           <FodmapBadge level={effectiveLevel} score={meal.fodmap_score} />
-          <SeverityChip severity={meal.symptom_severity} />
+          <Link
+            to={`/meal/${meal.id}/symptoms`}
+            className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-label={`${t("meal.symptoms.update")} ${meal.title}`}
+          >
+            <SeverityChip severity={meal.symptom_severity} />
+          </Link>
           {triggersAllTolerated && (
             <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success-soft px-2 py-1 text-[10px] text-success">
               <Check className="h-2.5 w-2.5" /> {t("meal.allTriggersTolerated")}
