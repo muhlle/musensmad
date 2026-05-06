@@ -88,15 +88,15 @@ const Settings = () => {
 
       <section className="rounded-2xl bg-card p-4 shadow-soft">
         <p className="text-xs text-muted-foreground">
-          {isAnonymous ? "Anonymous account" : "Signed in"}
+          {isAnonymous ? t("settings.account.anonymous") : t("settings.account.signedIn")}
         </p>
         <p className="mt-1 truncate text-sm font-medium text-foreground">
-          {displayName ?? "Local-only device"}
+          {displayName ?? t("settings.account.localOnly")}
         </p>
         <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{user?.id ?? "—"}</p>
         {isAnonymous && (
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Sign in with Google to keep your meal history safe across devices.
+            {t("settings.account.signInHint")}
           </p>
         )}
       </section>
@@ -108,7 +108,7 @@ const Settings = () => {
             className="w-full justify-start rounded-xl"
             onClick={signInWithGoogle}
           >
-            <LogIn className="h-4 w-4" /> Sign in with Google
+            <LogIn className="h-4 w-4" /> {t("settings.signInGoogle")}
           </Button>
         ) : (
           <Button
@@ -116,36 +116,41 @@ const Settings = () => {
             className="w-full justify-start rounded-xl"
             onClick={signOut}
           >
-            <LogOut className="h-4 w-4" /> Sign out
+            <LogOut className="h-4 w-4" /> {t("settings.signOut")}
           </Button>
         )}
         <Button variant="secondary" className="w-full justify-start rounded-xl" onClick={replayOnboarding}>
-          <RotateCcw className="h-4 w-4" /> Replay onboarding
+          <RotateCcw className="h-4 w-4" /> {t("settings.replayOnboarding")}
         </Button>
         <Button
           variant="ghost"
           className="w-full justify-start rounded-xl text-destructive hover:bg-destructive-soft hover:text-destructive"
           onClick={wipeData}
         >
-          <Trash2 className="h-4 w-4" /> Delete all my data
+          <Trash2 className="h-4 w-4" /> {t("settings.deleteAll")}
         </Button>
       </section>
 
       <section className="mt-5 rounded-2xl border border-border bg-card/60 p-4">
         <h3 className="flex items-center gap-1.5 text-sm font-medium">
-          <ShieldAlert className="h-4 w-4 text-warning" /> Important disclaimer
+          <ShieldAlert className="h-4 w-4 text-warning" /> {t("settings.disclaimer.title")}
         </h3>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          This app is a personal tracking tool. It does <span className="font-medium text-foreground">not</span> provide medical diagnosis, treatment, or advice. Estimates based on photos and descriptions can be inaccurate. Always consult a qualified healthcare professional for any IBS-related concerns.
+          {t("settings.disclaimer.body").split("{not}").map((part, i, arr) => (
+            <span key={i}>
+              {part}
+              {i < arr.length - 1 && <span className="font-medium text-foreground">{t("settings.disclaimer.not")}</span>}
+            </span>
+          ))}
         </p>
       </section>
 
       <section className="mt-4 rounded-2xl bg-primary-soft p-4">
         <h3 className="flex items-center gap-1.5 text-sm font-medium text-primary">
-          <Info className="h-4 w-4" /> About FODMAPs
+          <Info className="h-4 w-4" /> {t("settings.about.title")}
         </h3>
         <p className="mt-2 text-xs leading-relaxed text-foreground/80">
-          FODMAPs are short-chain carbohydrates that can trigger IBS symptoms. The low-FODMAP approach is one widely studied dietary tool. Your individual tolerance may vary.
+          {t("settings.about.body")}
         </p>
       </section>
     </AppShell>
