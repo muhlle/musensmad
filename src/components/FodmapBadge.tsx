@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { fodmapColor, FodmapLevel } from "@/lib/meal";
+import { useT } from "@/lib/i18n";
 
 interface FodmapBadgeProps {
   level: FodmapLevel;
@@ -7,14 +8,8 @@ interface FodmapBadgeProps {
   className?: string;
 }
 
-const labels: Record<FodmapLevel, string> = {
-  low: "Low FODMAP",
-  moderate: "Moderate FODMAP",
-  high: "High FODMAP",
-  unknown: "FODMAP unknown",
-};
-
 export const FodmapBadge = ({ level, score, className }: FodmapBadgeProps) => {
+  const { t } = useT();
   return (
     <span
       className={cn(
@@ -24,7 +19,7 @@ export const FodmapBadge = ({ level, score, className }: FodmapBadgeProps) => {
       )}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {labels[level]}
+      {t(`fodmap.${level}`)}
       {typeof score === "number" && <span className="opacity-70">· {score}/10</span>}
     </span>
   );
