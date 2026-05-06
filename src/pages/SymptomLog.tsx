@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ const SymptomLog = () => {
   const { user } = useAnonAuth();
   const navigate = useNavigate();
   const { t } = useT();
+  const tRef = useRef(t);
   const [meal, setMeal] = useState<Meal | null>(null);
   const [severity, setSeverity] = useState<SymptomSeverity>("none");
   const [types, setTypes] = useState<string[]>([]);
@@ -33,11 +34,15 @@ const SymptomLog = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+
+  useEffect(() => {
     if (!user || !id) return;
     (async () => {
       const { data } = await supabase.from("meals").select("*").eq("id", id).maybeSingle();
       if (!data) {
-        toast.error(t("meal.notFound"));
+        toast.error(tRef.current("meal.notFound"));
         navigate("/history");
         return;
       }
@@ -48,7 +53,7 @@ const SymptomLog = () => {
       setStartedAt(m.symptom_started_at ? toLocalInput(m.symptom_started_at) : "");
       setNotes(m.user_notes ?? "");
     })();
-  }, [id, user, navigate, t]);
+  }, [id, user, navigate]);
 
   const toLocalInput = (iso: string) => {
     const d = new Date(iso);

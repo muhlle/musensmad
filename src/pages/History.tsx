@@ -127,7 +127,7 @@ const History = () => {
                           to={`/meal/${meal.id}/symptoms`}
                           className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[10px] font-medium text-secondary-foreground transition-smooth hover:bg-secondary/80"
                         >
-                          {meal.symptom_severity === "none" && meal.symptom_types.length === 0 ? t("meal.symptoms.add") : t("meal.symptoms.update")}
+                          {t("meal.edit")}
                           <ChevronRight className="h-3 w-3" />
                         </Link>
                         {meal.edited_at && (
